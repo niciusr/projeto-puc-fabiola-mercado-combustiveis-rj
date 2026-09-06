@@ -1,0 +1,122 @@
+tabela;coluna;descricao;dominio_esperado;unidade;origem_linhagem
+silver_preco_coletado;data_coleta;Data informada para a coleta de preço;Data válida entre 2022-01-01 e 2024-12-31;data;ANP preços > Data da Coleta
+silver_preco_coletado;cnpj;CNPJ da revenda apenas com dígitos;14 dígitos quando válido;identificador público;ANP preços > CNPJ da Revenda
+silver_preco_coletado;cnpj_formato_valido;Indica se o CNPJ tem 14 dígitos;true ou false;booleano;regra de normalização CNPJ
+silver_preco_coletado;municipio_origem;Município como publicado na pesquisa;texto não vazio;texto;ANP preços > Municipio
+silver_preco_coletado;municipio_norm;Município em maiúsculas e sem acentos;texto normalizado;texto;normalização de municipio_origem
+silver_preco_coletado;codigo_ibge;Código IBGE conciliado a partir das vendas;7 dígitos ou nulo quando não conciliado;identificador geográfico;vendas municipais > CÓDIGO IBGE
+silver_preco_coletado;municipio_conciliado;Indica se o município encontrou código IBGE;true ou false;booleano;regra de conciliação municipal
+silver_preco_coletado;produto_origem;Produto como publicado pela pesquisa;categoria ANP;texto;ANP preços > Produto
+silver_preco_coletado;produto_analitico;Produto conformado para o modelo;GASOLINA_C, ETANOL_HIDRATADO ou categoria mapeada;texto;config/produto_mapeamento.csv
+silver_preco_coletado;compatibilidade_analitica;Tipo de compatibilidade entre fontes;direta, agregada ou somente_preco;texto;config/produto_mapeamento.csv
+silver_preco_coletado;preco_venda;Valor de venda convertido para decimal;maior que zero quando válido;R$/litro ou R$/m³ conforme unidade;ANP preços > Valor de Venda
+silver_preco_coletado;unidade_medida;Unidade publicada para o preço;categoria ANP;texto;ANP preços > Unidade de Medida
+silver_preco_coletado;preco_valido;Indica preço preenchido e positivo;true ou false;booleano;regra de domínio de preco_venda
+silver_preco_coletado;chave_preco;Hash da chave natural de preço;SHA-256;identificador técnico;CNPJ + produto + data
+silver_preco_coletado;duplicidade_chave;Indica repetição da chave natural;true ou false;booleano;contagem por chave_preco
+silver_preco_coletado;selecionado_para_agregacao;Indica a linha escolhida após desempate determinístico da chave;true ou false;booleano;ordem por arquivo_origem e preco_venda
+silver_preco_coletado;bandeira;Bandeira publicada para a revenda;categoria ANP ou nulo;texto;ANP preços > Bandeira
+silver_venda_municipio;ano;Ano de referência da venda;2022 a 2024;ano;ANP vendas > ANO
+silver_venda_municipio;codigo_ibge;Código IBGE do município;7 dígitos;identificador geográfico;ANP vendas > CÓDIGO IBGE
+silver_venda_municipio;municipio;Nome de município publicado na venda;texto não vazio;texto;ANP vendas > MUNICÍPIO
+silver_venda_municipio;municipio_norm;Município em forma de conciliação;texto normalizado;texto;normalização de municipio
+silver_venda_municipio;uf;Sigla da unidade federativa;RJ no recorte;texto;ANP vendas > UF
+silver_venda_municipio;produto_origem;Produto informado pela fonte de vendas;GASOLINA C ou ETANOL/ETANOL HIDRATADO;texto;ANP vendas > PRODUTO
+silver_venda_municipio;produto_analitico;Produto conformado para o modelo;GASOLINA_C ou ETANOL_HIDRATADO;texto;config/produto_mapeamento.csv
+silver_venda_municipio;volume_litros;Volume comercializado no ano;maior ou igual a zero;litros;ANP vendas > VENDAS
+silver_venda_municipio;volume_valido;Indica volume numérico e não negativo;true ou false;booleano;regra de domínio de volume_litros
+silver_venda_municipio;chave_venda;Hash da chave natural de venda;SHA-256;identificador técnico;código IBGE + produto + ano
+silver_venda_municipio;duplicidade_chave;Indica repetição da chave natural;true ou false;booleano;contagem por chave_venda
+gold_dim_tempo;data;Data de calendário;intervalo observado de coleta;data;derivada de silver_preco_coletado
+gold_dim_tempo;ano;Ano da data;2022 a 2024;ano;derivada de data
+gold_dim_tempo;mes;Número do mês;1 a 12;mês;derivada de data
+gold_dim_tempo;semana;Semana ISO aproximada;1 a 53;semana;derivada de data
+gold_dim_tempo;trimestre;Trimestre do ano;1 a 4;trimestre;derivada de data
+gold_dim_tempo;semestre;Semestre do ano;1 ou 2;semestre;derivada de data
+gold_dim_municipio;codigo_ibge;Chave canônica do município;7 dígitos;identificador geográfico;ANP vendas > CÓDIGO IBGE
+gold_dim_municipio;municipio;Nome de município;município do RJ;texto;ANP vendas > MUNICÍPIO
+gold_dim_municipio;municipio_norm;Nome normalizado;texto normalizado;texto;normalização de municipio
+gold_dim_municipio;uf;Sigla da UF;RJ;texto;ANP vendas > UF
+gold_dim_municipio;grande_regiao;Grande região do país;SUDESTE no recorte;texto;ANP vendas > GRANDE REGIÃO
+gold_dim_produto;produto_analitico;Chave de produto do modelo;categoria do mapeamento;texto;config/produto_mapeamento.csv
+gold_dim_produto;familia;Família de combustível;CICLO_OTTO, DIESEL ou GAS_NATURAL;texto;config/produto_mapeamento.csv
+gold_dim_produto;compatibilidades_origem;Regras de comparabilidade encontradas nas fontes;direta, agregada e/ou somente_preco;texto;agregação do mapeamento
+gold_dim_produto;usar_cruzamento_principal;Indica produto apto ao mart de mercado;true ou false;booleano;config/produto_mapeamento.csv
+gold_ref_mapeamento_produto;fonte;Origem a que a regra se aplica;PRECOS ou VENDAS_MUNICIPAIS;texto;config/produto_mapeamento.csv
+gold_ref_mapeamento_produto;produto_origem_normalizado;Produto normalizado na origem;categoria ANP;texto;config/produto_mapeamento.csv
+gold_ref_mapeamento_produto;produto_analitico;Produto conformado;categoria do modelo;texto;config/produto_mapeamento.csv
+gold_ref_mapeamento_produto;compatibilidade_analitica;Nível de comparação permitido;direta, agregada ou somente_preco;texto;config/produto_mapeamento.csv
+gold_dim_revenda;cnpj;Chave pública da revenda;14 dígitos quando válida;identificador público;silver_preco_coletado
+gold_dim_revenda;revenda;Nome da revenda observado na pesquisa;texto;texto;ANP preços > Revenda
+gold_dim_revenda;bandeira;Bandeira mais recente observada;categoria ANP ou nulo;texto;silver_preco_coletado
+gold_dim_revenda;codigo_ibge;Município conciliado;7 dígitos ou nulo;identificador geográfico;silver_preco_coletado
+gold_dim_revenda;primeira_coleta;Primeira coleta no recorte;data válida;data;agregação silver_preco_coletado
+gold_dim_revenda;ultima_coleta;Última coleta no recorte;data válida;data;agregação silver_preco_coletado
+gold_ref_conciliacao_municipio;municipio_origem;Nome publicado na pesquisa de preço;texto;texto;silver_preco_coletado
+gold_ref_conciliacao_municipio;municipio_norm;Nome usado para a ligação;maiúsculas sem acentos;texto;normalização de municipio_origem
+gold_ref_conciliacao_municipio;uf;UF da observação;RJ;texto;silver_preco_coletado
+gold_ref_conciliacao_municipio;codigo_ibge;Código encontrado na referência municipal;sete dígitos ou nulo;identificador geográfico;gold_dim_municipio
+gold_ref_conciliacao_municipio;municipio_conciliado;Resultado da tentativa de conciliação;true ou false;booleano;regra de conciliação
+gold_ref_conciliacao_municipio;qtd_observacoes_preco;Quantidade de linhas afetadas pelo nome;inteiro maior que zero;observações;agregação silver_preco_coletado
+gold_ref_conciliacao_municipio;regra_conciliacao;Regra usada na ligação;texto fixo;texto;pipeline de transformação
+gold_fato_preco_coletado;data_coleta;Data da observação de preço;2022-01-01 a 2024-12-31;data;silver_preco_coletado
+gold_fato_preco_coletado;cnpj;Revenda observada;14 dígitos quando válida;identificador público;silver_preco_coletado
+gold_fato_preco_coletado;codigo_ibge;Município conciliado;7 dígitos ou nulo;identificador geográfico;silver_preco_coletado
+gold_fato_preco_coletado;produto_analitico;Produto analítico;categoria do mapeamento;texto;silver_preco_coletado
+gold_fato_preco_coletado;preco_venda;Preço de venda;maior que zero quando válido;R$/unidade;silver_preco_coletado
+gold_fato_preco_coletado;preco_valido;Flag de domínio do preço;true ou false;booleano;silver_preco_coletado
+gold_fato_preco_coletado;duplicidade_chave;Flag de chave repetida;true ou false;booleano;silver_preco_coletado
+gold_fato_preco_coletado;municipio_conciliado;Flag de conciliação municipal;true ou false;booleano;silver_preco_coletado
+gold_fato_preco_municipio_semana;codigo_ibge;Município da agregação;7 dígitos;identificador geográfico;gold_fato_preco_coletado
+gold_fato_preco_municipio_semana;produto_analitico;Produto da agregação;categoria do mapeamento;texto;gold_fato_preco_coletado
+gold_fato_preco_municipio_semana;ano;Ano da coleta;2022 a 2024;ano;gold_fato_preco_coletado
+gold_fato_preco_municipio_semana;semana_inicio;Segunda-feira que identifica a semana;data válida;data;truncamento semanal de data_coleta
+gold_fato_preco_municipio_semana;semana;Semana da coleta;1 a 53;semana;gold_fato_preco_coletado
+gold_fato_preco_municipio_semana;qtd_coletas;Número de observações válidas;inteiro maior que zero;coletas;agregação semanal
+gold_fato_preco_municipio_semana;qtd_postos;CNPJ distintos na semana;inteiro maior que zero;postos;agregação semanal
+gold_fato_preco_municipio_semana;mediana_preco;Mediana semanal de preço;maior que zero;R$/unidade;agregação semanal
+gold_fato_preco_municipio_semana;media_preco;Média semanal de preço;maior que zero;R$/unidade;agregação semanal
+gold_fato_preco_municipio_semana;p25_preco;Percentil 25 do preço;maior que zero;R$/unidade;agregação semanal
+gold_fato_preco_municipio_semana;p75_preco;Percentil 75 do preço;maior que zero;R$/unidade;agregação semanal
+gold_fato_preco_municipio_semana;p90_preco;Percentil 90 do preço;maior que zero;R$/unidade;agregação semanal
+gold_fato_preco_municipio_semana;amplitude_preco;Máximo menos mínimo da semana;maior ou igual a zero;R$/unidade;agregação semanal
+gold_fato_preco_municipio_semana;cv_preco_pct;Coeficiente de variação semanal;maior ou igual a zero;percentual;desvio padrão / média
+gold_fato_preco_municipio_anual;codigo_ibge;Município da agregação anual;7 dígitos;identificador geográfico;agregação semanal
+gold_fato_preco_municipio_anual;produto_analitico;Produto da agregação anual;categoria do mapeamento;texto;agregação semanal
+gold_fato_preco_municipio_anual;ano;Ano de referência;2022 a 2024;ano;agregação semanal
+gold_fato_preco_municipio_anual;mediana_preco_anual;Mediana das medianas semanais;maior que zero;R$/unidade;agregação anual
+gold_fato_preco_municipio_anual;desvio_entre_semanas;Desvio padrão das medianas semanais;maior ou igual a zero;R$/unidade;agregação anual
+gold_fato_preco_municipio_anual;spread_medio_p90_p10;Média semanal do percentil 90 menos percentil 10;maior ou igual a zero;R$/unidade;agregação anual
+gold_fato_preco_municipio_anual;cv_medio_preco_pct;Média do coeficiente de variação semanal;maior ou igual a zero;percentual;agregação anual
+gold_fato_preco_municipio_anual;semanas_pesquisadas;Semanas com observação;inteiro maior que zero;semanas;agregação anual
+gold_fato_preco_municipio_anual;postos_distintos;Postos distintos no ano;inteiro maior que zero;postos;agregação detalhada
+gold_fato_preco_municipio_anual;cobertura_suficiente;Atende regra de publicação;true ou false;booleano;3 postos e 4 semanas
+gold_fato_preco_municipio_anual;preco_relativo_estado;Razão para a mediana estadual;maior que zero;índice;mediana municipal / estadual
+gold_fato_venda_municipio_anual;codigo_ibge;Município da venda;7 dígitos;identificador geográfico;silver_venda_municipio
+gold_fato_venda_municipio_anual;produto_analitico;Produto da venda;GASOLINA_C ou ETANOL_HIDRATADO;texto;silver_venda_municipio
+gold_fato_venda_municipio_anual;ano;Ano de referência;2022 a 2024;ano;silver_venda_municipio
+gold_fato_venda_municipio_anual;volume_litros;Volume anual comercializado;maior ou igual a zero;litros;silver_venda_municipio
+gold_fato_venda_municipio_anual;duplicidade_chave;Flag de chave repetida;true ou false;booleano;silver_venda_municipio
+gold_fato_mercado_municipio_anual;codigo_ibge;Município do mart;7 dígitos;identificador geográfico;junção de fatos anuais
+gold_fato_mercado_municipio_anual;produto_analitico;Produto do mart;GASOLINA_C ou ETANOL_HIDRATADO;texto;junção de fatos anuais
+gold_fato_mercado_municipio_anual;ano;Ano de referência;2022 a 2024;ano;junção de fatos anuais
+gold_fato_mercado_municipio_anual;volume_litros;Volume anual;maior ou igual a zero;litros;gold_fato_venda_municipio_anual
+gold_fato_mercado_municipio_anual;mediana_preco_anual;Preço mediano anual;maior que zero ou nulo;R$/unidade;gold_fato_preco_municipio_anual
+gold_fato_mercado_municipio_anual;desvio_entre_semanas;Variação entre medianas semanais;maior ou igual a zero ou nulo;R$/unidade;gold_fato_preco_municipio_anual
+gold_fato_mercado_municipio_anual;spread_medio_p90_p10;Dispersão média dentro das semanas;maior ou igual a zero ou nulo;R$/unidade;gold_fato_preco_municipio_anual
+gold_fato_mercado_municipio_anual;cv_medio_preco_pct;Coeficiente médio de variação semanal;maior ou igual a zero ou nulo;percentual;gold_fato_preco_municipio_anual
+gold_fato_mercado_municipio_anual;semanas_pesquisadas;Cobertura semanal;inteiro maior que zero ou nulo;semanas;gold_fato_preco_municipio_anual
+gold_fato_mercado_municipio_anual;postos_distintos;Cobertura de postos;inteiro maior que zero ou nulo;postos;gold_fato_preco_municipio_anual
+gold_fato_mercado_municipio_anual;possui_preco;Existe observação de preço;true ou false;booleano;presença no fato de preço anual
+gold_fato_mercado_municipio_anual;possui_venda;Existe registro de venda;true ou false;booleano;presença no fato de venda anual
+gold_fato_mercado_municipio_anual;publicar_analise;Atende regra de cobertura e compatibilidade;true ou false;booleano;regra do mart
+gold_fato_cadastro_revenda_snapshot;data_extracao;Data da ingestão do retrato cadastral;data válida;data;metadado de carga
+gold_fato_cadastro_revenda_snapshot;cnpj;CNPJ do revendedor atual;14 dígitos quando válida;identificador público;ANP cadastro > CNPJ
+gold_fato_cadastro_revenda_snapshot;razao_social;Razão social atual;texto;texto;ANP cadastro > RAZAOSOCIAL
+gold_fato_cadastro_revenda_snapshot;uf;UF do cadastro atual;RJ no recorte;texto;ANP cadastro > UF
+gold_fato_cadastro_revenda_snapshot;municipio;Município do cadastro atual;município do RJ;texto;ANP cadastro > MUNICIPIO
+gold_fato_cadastro_revenda_snapshot;bandeira;Bandeira do cadastro atual;categoria ANP ou nulo;texto;ANP cadastro > BANDEIRA
+gold_fato_cadastro_revenda_snapshot;cnpj_observado_historico;CNPJ apareceu na pesquisa de 2022–2024;true ou false;booleano;comparação com gold_dim_revenda
+gold_preco_outlier;qtd_observacoes_grupo;Quantidade de preços no grupo usado pelo IQR;inteiro maior que zero;observações;agregação por município-produto-ano
+gold_preco_outlier;outlier_iqr_avaliavel;Grupo tem observações suficientes para cálculo de IQR;true ou false;booleano;mínimo de quatro observações
+gold_preco_outlier;outlier_iqr;Preço fora do limite de 1,5 IQR;true ou false;booleano;regra de outlier

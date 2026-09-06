@@ -1,0 +1,11 @@
+fonte;produto_origem_normalizado;produto_analitico;familia;compatibilidade_analitica;usar_cruzamento_principal;observacao
+precos;GASOLINA;GASOLINA_C;CICLO_OTTO;direta;true;Corresponde ao produto municipal Gasolina C para o cruzamento principal.
+precos;ETANOL;ETANOL_HIDRATADO;CICLO_OTTO;direta;true;Corresponde ao produto municipal Etanol Hidratado.
+precos;GASOLINA ADITIVADA;GASOLINA_ADITIVADA;CICLO_OTTO;somente_preco;false;Mantida para análise de preço sem duplicar o volume de Gasolina C.
+precos;DIESEL;OLEO_DIESEL;DIESEL;agregada;false;A venda municipal agrega tipos de diesel; não entra no cruzamento principal.
+precos;DIESEL S10;OLEO_DIESEL;DIESEL;agregada;false;A venda municipal agrega tipos de diesel; não entra no cruzamento principal.
+precos;GNV;GNV;GAS_NATURAL;somente_preco;false;Mantido apenas na análise de preços.
+vendas_municipais;GASOLINA C;GASOLINA_C;CICLO_OTTO;direta;true;Volume anual em litros.
+vendas_municipais;ETANOL;ETANOL_HIDRATADO;CICLO_OTTO;direta;true;Volume anual em litros.
+vendas_municipais;ETANOL HIDRATADO;ETANOL_HIDRATADO;CICLO_OTTO;direta;true;Variação encontrada em algumas publicações da ANP.
+vendas_municipais;OLEO DIESEL;OLEO_DIESEL;DIESEL;agregada;false;Mantido para checagem, sem comparação direta com preços.
