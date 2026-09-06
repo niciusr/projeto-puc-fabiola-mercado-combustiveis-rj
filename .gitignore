@@ -1,0 +1,28 @@
+# Dados baixados e resultados de execução não entram no repositório.
+data/raw/*
+data/processed/*
+data/metadata/*.json
+data/metadata/*.csv
+
+!data/README.md
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/metadata/.gitkeep
+
+# Arquivos locais do Databricks e do Python.
+.databricks/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Credenciais, certificados e configurações específicas da máquina.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.vscode/
+.idea/
+.ipynb_checkpoints/
