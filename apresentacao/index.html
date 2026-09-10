@@ -3,2142 +3,413 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Apresentação do MVP de dados sobre o mercado de combustíveis no Rio de Janeiro entre 2022 e 2024.">
-  <title>MVP ANP RJ | Fabiola Dias Carvalho</title>
+  <meta name="description" content="Projeto de Engenharia de Dados sobre o mercado brasileiro de combustíveis.">
+  <title>Mercado de combustíveis no Brasil | Fabiola Dias Carvalho</title>
   <style>
     :root {
-      --navy: #102a43;
-      --navy-deep: #071a2e;
-      --ink: #17324d;
-      --muted: #5d7184;
-      --paper: #f7f4ed;
-      --white: #fffdf8;
-      --line: #cfd9de;
-      --teal: #147d7e;
-      --teal-soft: #dcefeb;
-      --amber: #b7791f;
-      --amber-soft: #f7ead0;
-      --coral: #ab4d38;
-      --coral-soft: #f6e3de;
-      --green: #24744e;
-      --green-soft: #dff0e7;
-      --shadow: 0 18px 40px rgba(16, 42, 67, .13);
-      --slide-w: 1280px;
-      --slide-h: 720px;
+      --navy: #0e2a47;
+      --blue: #1d5c86;
+      --teal: #197b74;
+      --gold: #c58b2c;
+      --ink: #172d3d;
+      --muted: #5a6d78;
+      --paper: #f7f5ef;
+      --card: #fffdf8;
+      --line: #d5ddd9;
+      --shadow: 0 20px 48px rgba(15, 42, 65, .16);
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      background: #d9e1e3;
-      scroll-behavior: smooth;
-    }
-
+    * { box-sizing: border-box; }
+    html { background: #dbe3e5; }
     body {
       margin: 0;
       color: var(--ink);
-      background: #d9e1e3;
-      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.45;
+      background: #dbe3e5;
+      font: 17px/1.45 Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    a {
-      color: inherit;
-      text-decoration-color: currentColor;
-      text-underline-offset: 3px;
-    }
-
-    button,
-    a {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    button:focus-visible,
-    a:focus-visible,
-    summary:focus-visible {
-      outline: 3px solid #d79b32;
-      outline-offset: 4px;
-    }
-
-    .deck {
-      width: 100%;
-    }
-
+    .deck { padding: 24px 0 72px; }
     .slide {
-      width: min(var(--slide-w), calc(100vw - 48px));
-      min-height: min(var(--slide-h), calc((100vw - 48px) * .5625));
+      width: min(1280px, calc(100vw - 48px));
+      min-height: min(720px, calc((100vw - 48px) * .5625));
       margin: 24px auto;
-      padding: clamp(30px, 4.1vw, 62px) clamp(34px, 5.7vw, 84px) 42px;
+      padding: clamp(34px, 5vw, 68px);
+      position: relative;
       display: grid;
       grid-template-rows: auto 1fr auto;
-      gap: 18px;
+      gap: 24px;
       overflow: hidden;
-      position: relative;
       background: var(--paper);
       box-shadow: var(--shadow);
-    }
-
-    body.js {
-      overflow: hidden;
-      background: var(--navy-deep);
-    }
-
-    body.js .deck {
-      height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 20px 24px 72px;
-    }
-
-    body.js .slide {
-      display: none;
-      width: min(var(--slide-w), calc((100vh - 108px) * 1.7777778), calc(100vw - 48px));
-      min-height: 0;
-      height: min(var(--slide-h), calc(100vh - 108px), calc((100vw - 48px) * .5625));
-      margin: 0;
-    }
-
-    body.js .slide.active {
-      display: grid;
-      animation: enter .25s ease-out both;
-    }
-
-    body.js.overview {
-      overflow: auto;
-      background: #d9e1e3;
-    }
-
-    body.js.overview .deck {
-      display: block;
-      height: auto;
-      padding: 20px 0 80px;
-    }
-
-    body.js.overview .slide {
-      display: grid;
-      height: auto;
-      min-height: min(var(--slide-h), calc((100vw - 48px) * .5625));
-      margin: 24px auto;
-      opacity: .86;
-    }
-
-    body.js.overview .slide.active {
-      outline: 5px solid #d79b32;
-      outline-offset: 4px;
-      opacity: 1;
-    }
-
-    @keyframes enter {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .slide::before {
       content: "";
       position: absolute;
       inset: 0 auto 0 0;
-      width: 10px;
+      width: 9px;
       background: var(--teal);
-    }
-
-    .slide-header {
-      position: relative;
-      z-index: 1;
-    }
-
-    .eyebrow {
-      margin: 0 0 10px;
-      color: var(--teal);
-      font-size: clamp(11px, 1.05vw, 15px);
-      font-weight: 800;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-
-    h1,
-    h2,
-    h3,
-    p {
-      margin-top: 0;
-    }
-
-    h1,
-    h2,
-    h3 {
-      color: var(--navy);
-      font-family: Georgia, "Times New Roman", serif;
-      line-height: 1.08;
-    }
-
-    h1 {
-      max-width: 840px;
-      margin-bottom: 22px;
-      font-size: clamp(43px, 5.5vw, 75px);
-      letter-spacing: -.035em;
-    }
-
-    h2 {
-      max-width: 940px;
-      margin-bottom: 0;
-      font-size: clamp(30px, 3.2vw, 48px);
-      letter-spacing: -.025em;
-    }
-
-    h3 {
-      margin-bottom: 8px;
-      font-size: clamp(20px, 1.85vw, 28px);
-    }
-
-    .slide-body {
-      min-height: 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .slide-footer {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 18px;
-      color: var(--muted);
-      font-size: clamp(10px, .9vw, 13px);
-      position: relative;
-      z-index: 1;
-    }
-
-    .slide-footer::before {
-      content: "";
-      position: absolute;
-      inset: -12px 0 auto;
-      height: 1px;
-      background: var(--line);
-    }
-
-    .footer-topic {
-      font-weight: 700;
-    }
-
-    .slide-number {
-      min-width: 48px;
-      text-align: right;
-      font-variant-numeric: tabular-nums;
     }
 
     .cover {
-      color: #f4f0e7;
+      color: #f7fbfa;
       background:
-        radial-gradient(circle at 85% 14%, rgba(69, 168, 163, .28), transparent 24%),
-        radial-gradient(circle at 84% 89%, rgba(217, 155, 51, .17), transparent 34%),
-        linear-gradient(135deg, #071a2e 0%, #102a43 62%, #0d4050 100%);
+        radial-gradient(circle at 86% 15%, rgba(66, 173, 166, .28), transparent 26%),
+        radial-gradient(circle at 83% 92%, rgba(214, 158, 55, .2), transparent 30%),
+        linear-gradient(135deg, #091e35 0%, #123d5e 63%, #0b5a61 100%);
     }
+    .cover::before { background: var(--gold); }
+    .cover h1, .cover h2, .cover p { color: #fffdf8; }
 
-    .cover::before {
-      background: #d79b32;
-    }
-
-    .cover h1,
-    .cover h2,
-    .cover h3 {
-      color: #fffdf8;
-    }
-
-    .cover .eyebrow {
-      color: #ccefe9;
-    }
-
-    .cover .slide-footer {
-      color: #c4d0d9;
-    }
-
-    .cover .slide-footer::before {
-      background: rgba(255,255,255,.25);
-    }
-
-    .cover-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(270px, .57fr);
-      align-items: end;
-      gap: 56px;
-    }
-
-    .cover-subtitle {
-      max-width: 620px;
-      margin-bottom: 28px;
-      color: #dae5e5;
-      font-size: clamp(20px, 2vw, 30px);
-      line-height: 1.3;
-    }
-
-    .cover-name {
-      margin: 0;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,.32);
-      color: #fffdf8;
-      font-size: clamp(18px, 1.8vw, 26px);
-      font-weight: 700;
-    }
-
-    .cover-side {
-      align-self: center;
-      padding: 32px 0 32px 30px;
-      border-left: 1px solid rgba(204, 239, 233, .55);
-    }
-
-    .cover-side p {
-      margin-bottom: 18px;
-      color: #c8dadb;
-      font-size: clamp(14px, 1.25vw, 18px);
-    }
-
-    .cover-mark {
-      display: grid;
-      gap: 10px;
-      margin-top: 34px;
-    }
-
-    .cover-mark span {
-      display: block;
-      height: 7px;
-      background: #d79b32;
-    }
-
-    .cover-mark span:nth-child(2) {
-      width: 72%;
-      background: #49a8a3;
-    }
-
-    .cover-mark span:nth-child(3) {
-      width: 43%;
-      background: #dcefeb;
-    }
-
-    .lead {
-      max-width: 950px;
-      font-size: clamp(20px, 2vw, 30px);
-      line-height: 1.35;
-    }
-
-    .statement {
-      max-width: 970px;
-      margin: 26px 0 0;
-      padding: 22px 0 22px 28px;
-      border-left: 6px solid var(--amber);
-      color: var(--navy);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(24px, 2.35vw, 36px);
-      line-height: 1.27;
-    }
-
-    .note {
-      color: var(--muted);
-      font-size: clamp(14px, 1.2vw, 18px);
-    }
-
-    .numbered-questions {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: 54px;
-      row-gap: 11px;
-      counter-reset: question;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .numbered-questions li {
-      min-height: 78px;
-      padding: 12px 0 12px 55px;
-      position: relative;
-      border-top: 1px solid var(--line);
-      font-size: clamp(15px, 1.4vw, 20px);
-    }
-
-    .numbered-questions li::before {
-      content: counter(question, decimal-leading-zero);
-      counter-increment: question;
-      position: absolute;
-      top: 13px;
-      left: 0;
+    .eyebrow {
+      margin: 0 0 12px;
       color: var(--teal);
-      font-size: clamp(14px, 1.15vw, 18px);
+      font-size: .78rem;
       font-weight: 800;
-      letter-spacing: .04em;
+      letter-spacing: .13em;
+      text-transform: uppercase;
     }
+    .cover .eyebrow { color: #bfe5e1; }
+    h1, h2, h3 { margin: 0; color: var(--navy); font-family: Georgia, "Times New Roman", serif; line-height: 1.07; }
+    h1 { max-width: 850px; font-size: clamp(42px, 5.6vw, 76px); letter-spacing: -.035em; }
+    h2 { font-size: clamp(31px, 3.35vw, 49px); letter-spacing: -.025em; }
+    h3 { font-size: clamp(20px, 1.9vw, 28px); }
+    p { margin: 0; }
+    a { color: inherit; text-underline-offset: 3px; }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: clamp(24px, 3.2vw, 52px);
-      align-items: start;
-    }
+    .lead { max-width: 960px; font-size: clamp(20px, 2vw, 29px); line-height: 1.34; }
+    .muted { color: var(--muted); }
+    .accent { color: var(--teal); font-weight: 750; }
+    .gold { color: var(--gold); font-weight: 750; }
 
-    .grid-2-wide {
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: clamp(24px, 3.2vw, 52px);
-      align-items: start;
-    }
+    .cover-grid { display: grid; grid-template-columns: 1fr .48fr; gap: 54px; align-items: end; }
+    .cover-side { padding: 20px 0 20px 30px; border-left: 1px solid rgba(255,255,255,.35); }
+    .cover-side p { color: #cde1e3; margin-bottom: 16px; }
+    .mark { display: grid; gap: 9px; margin-top: 36px; }
+    .mark span { height: 7px; background: var(--gold); }
+    .mark span:nth-child(2) { width: 72%; background: #4aacaa; }
+    .mark span:nth-child(3) { width: 43%; background: #cde1e3; }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: clamp(18px, 2.4vw, 36px);
-      align-items: start;
-    }
-
-    .simple-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .simple-list li {
-      margin: 0;
-      padding: 13px 0;
-      border-top: 1px solid var(--line);
-      font-size: clamp(15px, 1.35vw, 20px);
-    }
-
-    .simple-list strong {
-      color: var(--navy);
-    }
-
-    .timeline {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0;
-      margin: 17px 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .timeline li {
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 4vw, 56px); align-items: start; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-content: start; }
+    .card {
       min-height: 144px;
-      padding: 17px 22px 17px 0;
-      border-top: 6px solid var(--teal);
-      border-right: 1px solid var(--line);
+      padding: 20px;
+      border: 1px solid var(--line);
+      background: var(--card);
     }
+    .card p { margin-top: 9px; color: var(--muted); font-size: .94em; }
+    .card .number { color: var(--teal); font-size: .85em; font-weight: 800; letter-spacing: .08em; }
 
-    .timeline li + li {
-      padding-left: 22px;
-    }
-
-    .timeline li:last-child {
-      border-right: 0;
-    }
-
-    .timeline strong {
-      display: block;
-      margin-bottom: 8px;
+    .quote {
+      max-width: 1020px;
+      margin: 22px 0 0;
+      padding: 24px 0 24px 28px;
+      border-left: 6px solid var(--gold);
       color: var(--navy);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(26px, 2.35vw, 35px);
+      font: clamp(23px, 2.4vw, 37px)/1.27 Georgia, "Times New Roman", serif;
     }
+    .list { margin: 0; padding: 0; list-style: none; }
+    .list li { padding: 12px 0; border-top: 1px solid var(--line); }
+    .list li strong { color: var(--navy); }
 
-    .rule-box {
-      margin-top: 24px;
-      padding: 20px 24px;
-      border: 1px solid #b8d6d2;
-      background: var(--teal-soft);
-      font-size: clamp(15px, 1.3vw, 19px);
+    table { width: 100%; border-collapse: collapse; font-size: clamp(13px, 1.15vw, 17px); }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--navy); font-size: .8em; letter-spacing: .075em; text-transform: uppercase; }
+    td:first-child { color: var(--navy); font-weight: 700; }
+
+    .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 16px; }
+    .stage { min-height: 235px; padding: 20px 22px 20px 0; border-top: 6px solid var(--navy); }
+    .stage + .stage { padding-left: 22px; border-left: 1px solid var(--line); }
+    .stage:nth-child(2) { border-top-color: var(--teal); }
+    .stage:nth-child(3) { border-top-color: var(--gold); }
+    .stage:nth-child(4) { border-top-color: var(--blue); }
+    .stage p { margin-top: 9px; color: var(--muted); }
+    .stage .tag { margin-bottom: 8px; color: var(--muted); font-size: .78em; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+
+    .model { display: grid; grid-template-columns: 1.15fr .85fr; gap: 34px; align-items: center; }
+    .schema {
+      padding: 28px;
+      border: 1px solid #bad5d0;
+      background: #e6f1ee;
+      color: #173e45;
+      font: 16px/1.75 ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: pre-wrap;
     }
+    .rule { padding: 18px 20px; border: 1px solid #e4d0a7; background: #fbf0d9; color: #553e1e; }
+    .rule + .rule { margin-top: 14px; }
+    .rule strong { color: #62420d; }
 
-    .rule-box strong {
-      color: var(--navy);
-    }
+    .metric { padding: 23px; border-top: 5px solid var(--teal); background: var(--card); box-shadow: 0 7px 18px rgba(18,47,61,.07); }
+    .metric:nth-child(2) { border-top-color: var(--gold); }
+    .metric:nth-child(3) { border-top-color: var(--blue); }
+    .metric p { margin-top: 8px; color: var(--muted); }
+    .formula { margin-top: 20px; padding: 17px 19px; border: 1px dashed #9ab9b3; color: #174b4d; background: #eff8f6; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: clamp(13px, 1.15vw, 17px);
-    }
-
-    th,
-    td {
-      padding: 13px 12px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      color: var(--navy);
-      font-size: .84em;
-      font-weight: 800;
-      letter-spacing: .07em;
-      text-transform: uppercase;
-    }
-
-    .source-table td:first-child {
-      width: 30%;
-      color: var(--navy);
-      font-weight: 800;
-    }
-
-    .flow {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0;
-      margin-top: 10px;
-    }
-
-    .flow-step {
-      min-height: 250px;
-      padding: 20px 24px 20px 0;
-      position: relative;
-      border-top: 5px solid var(--navy);
-    }
-
-    .flow-step + .flow-step {
-      padding-left: 24px;
-      border-left: 1px solid var(--line);
-    }
-
-    .flow-step:nth-child(2) {
-      border-top-color: var(--teal);
-    }
-
-    .flow-step:nth-child(3) {
-      border-top-color: var(--amber);
-    }
-
-    .flow-step:nth-child(4) {
-      border-top-color: var(--coral);
-    }
-
-    .flow-step .flow-label {
-      margin: 0 0 10px;
-      color: var(--muted);
-      font-size: .86em;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .flow-step h3 {
-      margin-bottom: 13px;
-    }
-
-    .flow-step p {
-      font-size: clamp(14px, 1.15vw, 17px);
-    }
-
-    .process-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      counter-reset: process;
-    }
-
-    .process-list li {
-      min-height: 88px;
-      padding: 13px 0 14px 74px;
-      position: relative;
-      border-top: 1px solid var(--line);
-      font-size: clamp(14px, 1.2vw, 18px);
-    }
-
-    .process-list li::before {
-      content: counter(process);
-      counter-increment: process;
-      width: 39px;
-      height: 39px;
+    .capture {
+      min-height: 225px;
+      padding: 22px;
       display: grid;
       place-items: center;
-      position: absolute;
-      top: 15px;
-      left: 0;
-      border-radius: 50%;
-      color: var(--white);
-      background: var(--teal);
-      font-weight: 800;
-    }
-
-    .keyline {
-      margin-top: 22px;
-      padding: 18px 0 0;
-      border-top: 4px solid var(--amber);
-      color: var(--navy);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(19px, 1.75vw, 26px);
-      line-height: 1.3;
-    }
-
-    .model-layout {
-      display: grid;
-      grid-template-columns: .94fr 1.16fr .9fr;
-      gap: 0;
-      align-items: stretch;
-      margin-top: 8px;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .model-column {
-      padding: 24px;
-      border-right: 1px solid var(--line);
-    }
-
-    .model-column:first-child {
-      padding-left: 0;
-    }
-
-    .model-column:last-child {
-      padding-right: 0;
-      border-right: 0;
-    }
-
-    .model-column p {
-      color: var(--muted);
-      font-size: clamp(13px, 1.1vw, 16px);
-    }
-
-    .model-column ul {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .model-column li {
-      margin: 0 0 9px;
-      color: var(--navy);
-      font-size: clamp(14px, 1.15vw, 17px);
-    }
-
-    .model-column li::before {
-      content: "—";
-      margin-right: 8px;
-      color: var(--teal);
-      font-weight: 800;
-    }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0;
-      border-top: 1px solid var(--line);
-      border-left: 1px solid var(--line);
-    }
-
-    .metric {
-      min-height: 132px;
-      padding: 20px 22px;
-      border-right: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .metric .metric-value {
-      display: block;
-      margin-bottom: 7px;
-      color: var(--navy);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(29px, 3vw, 46px);
-      line-height: 1;
-      letter-spacing: -.03em;
-    }
-
-    .metric .metric-label {
-      color: var(--muted);
-      font-size: clamp(12px, 1.05vw, 16px);
-      line-height: 1.25;
-    }
-
-    .evidence {
-      margin: 0;
-    }
-
-    .evidence button {
-      width: 100%;
-      padding: 0;
-      border: 1px solid #b6c4cb;
-      display: block;
-      overflow: hidden;
-      background: #fff;
-      cursor: zoom-in;
-    }
-
-    .evidence img {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-
-    .evidence figcaption {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: clamp(11px, .95vw, 14px);
-    }
-
-    .evidence-pair {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      margin-top: 4px;
-    }
-
-    .quality-summary {
-      padding-left: 26px;
-      border-left: 6px solid var(--teal);
-    }
-
-    .quality-summary p {
-      font-size: clamp(16px, 1.42vw, 21px);
-    }
-
-    .quality-bar {
-      display: grid;
-      grid-template-columns: 10fr 4fr;
-      height: 24px;
-      overflow: hidden;
-      margin: 16px 0 11px;
-      background: var(--line);
-    }
-
-    .quality-bar span:first-child {
-      background: var(--green);
-    }
-
-    .quality-bar span:last-child {
-      background: var(--amber);
-    }
-
-    .quality-labels {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      color: var(--muted);
-      font-size: clamp(12px, 1.05vw, 16px);
-    }
-
-    .attention-table {
-      margin-top: 18px;
-      font-size: clamp(12px, 1.04vw, 15px);
-    }
-
-    .attention-table td:first-child {
-      color: var(--navy);
-      font-weight: 700;
-    }
-
-    .bar-chart {
-      margin: 14px 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .bar-chart li {
-      display: grid;
-      grid-template-columns: 54px 1fr 66px;
-      align-items: center;
-      gap: 13px;
-      margin-bottom: 18px;
-      font-size: clamp(13px, 1.15vw, 17px);
-    }
-
-    .bar-track {
-      height: 22px;
-      background: #dde5e6;
-      overflow: hidden;
-    }
-
-    .bar-track span {
-      display: block;
-      height: 100%;
-      background: var(--teal);
-    }
-
-    .bar-chart strong {
-      text-align: right;
-      color: var(--navy);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .finding {
-      padding: 0 0 23px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .finding + .finding {
-      padding-top: 22px;
-    }
-
-    .finding .finding-value {
-      display: block;
-      margin-bottom: 9px;
-      color: var(--coral);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(38px, 4.6vw, 67px);
-      line-height: .95;
-      letter-spacing: -.05em;
-    }
-
-    .finding p {
-      margin-bottom: 0;
-      font-size: clamp(15px, 1.3vw, 19px);
-    }
-
-    .result-panel {
-      display: grid;
-      grid-template-columns: 1.06fr .94fr;
-      gap: 30px;
-      align-items: stretch;
-    }
-
-    .result-copy {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 10px 0;
-    }
-
-    .correlations {
-      margin: 22px 0 0;
-      border-top: 1px solid var(--line);
-    }
-
-    .correlation {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 20px;
-      padding: 17px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .correlation p {
-      margin: 0;
-      font-size: clamp(15px, 1.28vw, 19px);
-    }
-
-    .correlation strong {
-      align-self: center;
-      color: var(--teal);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(31px, 3vw, 45px);
-      line-height: 1;
-      letter-spacing: -.04em;
-    }
-
-    .interpretation {
-      margin-top: 25px;
-      padding: 18px 23px;
-      border-left: 5px solid var(--amber);
-      background: var(--amber-soft);
-      font-size: clamp(15px, 1.24vw, 18px);
-    }
-
-    .contrast {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0;
-      border-top: 5px solid var(--navy);
-    }
-
-    .contrast section {
-      min-height: 300px;
-      padding: 26px 30px;
-      border-right: 1px solid var(--line);
-      background: #f8faf9;
-    }
-
-    .contrast section:last-child {
-      border-right: 0;
-      background: #fbf4e9;
-    }
-
-    .contrast h3 {
-      margin-bottom: 17px;
-    }
-
-    .contrast ul {
-      margin: 0;
-      padding-left: 19px;
-    }
-
-    .contrast li {
-      margin-bottom: 13px;
-      font-size: clamp(14px, 1.18vw, 17px);
-    }
-
-    .self-review {
-      display: grid;
-      grid-template-columns: 1.12fr .88fr;
-      gap: 42px;
-      align-items: start;
-    }
-
-    .self-review .review-section {
-      padding: 0 0 22px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .self-review .review-section + .review-section {
-      padding-top: 22px;
-    }
-
-    .review-section p,
-    .review-section li {
-      font-size: clamp(14px, 1.22vw, 18px);
-    }
-
-    .review-section ul {
-      margin: 0;
-      padding-left: 19px;
-    }
-
-    .review-section li {
-      margin-bottom: 10px;
-    }
-
-    .delivery-list {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0 40px;
-      margin: 12px 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .delivery-list li {
-      padding: 14px 0 14px 34px;
-      position: relative;
-      border-top: 1px solid var(--line);
-      font-size: clamp(14px, 1.18vw, 17px);
-    }
-
-    .delivery-list li::before {
-      content: "✓";
-      position: absolute;
-      top: 13px;
-      left: 0;
-      color: var(--green);
-      font-weight: 900;
-    }
-
-    .delivery-callout {
-      margin-top: 26px;
-      padding: 21px 25px;
-      border: 1px solid #e0c486;
-      background: var(--amber-soft);
-      color: var(--ink);
-      font-size: clamp(15px, 1.25vw, 18px);
-    }
-
-    .references {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0 42px;
-      margin: 20px 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .references li {
-      padding: 13px 0;
-      border-top: 1px solid rgba(255,255,255,.28);
-      color: #d9e5e7;
-      font-size: clamp(13px, 1.1vw, 16px);
-    }
-
-    .references strong {
-      color: #fffdf8;
-    }
-
-    .closing {
-      color: #f4f0e7;
-      background:
-        radial-gradient(circle at 18% 88%, rgba(217, 155, 51, .22), transparent 26%),
-        linear-gradient(135deg, #071a2e 0%, #102a43 72%, #0d4050 100%);
-    }
-
-    .closing::before {
-      background: #d79b32;
-    }
-
-    .closing h2,
-    .closing h3 {
-      color: #fffdf8;
-    }
-
-    .closing .eyebrow {
-      color: #ccefe9;
-    }
-
-    .closing .lead {
-      color: #dae5e5;
-    }
-
-    .closing .slide-footer {
-      color: #c4d0d9;
-    }
-
-    .closing .slide-footer::before {
-      background: rgba(255,255,255,.25);
-    }
-
-    .closing .references a {
-      color: #dbeeee;
-    }
-
-    .notes {
-      display: none;
-      position: absolute;
-      right: clamp(28px, 4vw, 62px);
-      bottom: 52px;
-      width: min(550px, calc(100% - 112px));
-      padding: 18px 22px;
-      z-index: 7;
-      border-left: 5px solid var(--amber);
-      background: rgba(255, 253, 248, .97);
-      box-shadow: 0 14px 34px rgba(7, 26, 46, .22);
-      color: var(--ink);
-      font-size: clamp(13px, 1.08vw, 16px);
-    }
-
-    .notes h3 {
-      margin-bottom: 8px;
-      color: var(--navy);
-      font-size: 1.1em;
-    }
-
-    .notes p:last-child {
-      margin-bottom: 0;
-    }
-
-    body.show-notes .slide.active .notes {
-      display: block;
-    }
+      border: 2px dashed #a9bdb9;
+      background: #edf3f1;
+      text-align: center;
+      color: #52716d;
+    }
+    .capture strong { display: block; margin-bottom: 7px; color: var(--teal); }
+    .evidence { margin: 0; border: 1px solid var(--line); background: #fff; }
+    .evidence img { display: block; width: 100%; height: 285px; object-fit: cover; object-position: top; }
+    .evidence figcaption { padding: 10px 13px; color: var(--muted); font-size: .82em; }
+    .evidence-grid { display: grid; gap: 12px; }
+    .evidence-grid .evidence img { height: 142px; }
+    .callout { padding: 18px 20px; border-left: 5px solid var(--teal); background: #e8f2f0; }
+
+    .footer { display: flex; justify-content: space-between; gap: 20px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: .8em; }
+    .cover .footer { border-color: rgba(255,255,255,.3); color: #cde1e3; }
 
     .controls {
-      display: none;
-    }
-
-    body.js .controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
       position: fixed;
       right: 22px;
-      bottom: 17px;
-      z-index: 30;
-      color: #eff5f5;
+      bottom: 18px;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
     }
+    button { border: 0; padding: 10px 14px; color: white; background: var(--navy); cursor: pointer; font-weight: 700; }
+    button:hover { background: var(--teal); }
 
-    .controls button {
-      min-width: 42px;
-      height: 36px;
-      padding: 0 11px;
-      border: 1px solid rgba(239,245,245,.45);
-      color: #eff5f5;
-      background: rgba(7, 26, 46, .66);
-      font: inherit;
-      cursor: pointer;
-    }
-
-    .controls button:hover {
-      background: rgba(20, 125, 126, .9);
-    }
-
-    .slide-count {
-      min-width: 52px;
-      color: #c9d8db;
-      text-align: center;
-      font-size: 13px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .progress {
-      width: 146px;
-      height: 3px;
-      overflow: hidden;
-      background: rgba(239,245,245,.25);
-    }
-
-    .progress span {
-      display: block;
-      width: 5%;
-      height: 100%;
-      background: #d79b32;
-      transition: width .2s ease;
-    }
-
-    dialog {
-      width: min(1200px, calc(100vw - 46px));
-      max-height: calc(100vh - 46px);
-      padding: 20px;
-      border: 0;
-      background: #071a2e;
-      box-shadow: 0 26px 70px rgba(0,0,0,.55);
-    }
-
-    dialog::backdrop {
-      background: rgba(2, 12, 22, .84);
-    }
-
-    .dialog-close {
-      display: grid;
-      place-items: center;
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 38px;
-      height: 38px;
-      border: 1px solid rgba(255,255,255,.48);
-      color: #fff;
-      background: rgba(7,26,46,.85);
-      font-size: 25px;
-      cursor: pointer;
-    }
-
-    dialog img {
-      display: block;
-      max-width: 100%;
-      max-height: calc(100vh - 120px);
-      margin: 0 auto;
-    }
-
-    dialog p {
-      margin: 12px 0 0;
-      color: #d9e5e7;
-      font-size: 14px;
-    }
+    body.present { overflow: hidden; background: #091e35; }
+    body.present .deck { height: 100vh; display: grid; place-items: center; padding: 22px 24px 66px; }
+    body.present .slide { display: none; width: min(1280px, calc((100vh - 100px) * 1.7778), calc(100vw - 48px)); min-height: 0; height: min(720px, calc(100vh - 100px), calc((100vw - 48px) * .5625)); margin: 0; }
+    body.present .slide.active { display: grid; animation: in .24s ease-out; }
+    @keyframes in { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
 
     @media (max-width: 760px) {
-      html,
-      body {
-        background: var(--paper);
-      }
-
-      body.js,
-      body.js.overview {
-        overflow: auto;
-        background: var(--paper);
-      }
-
-      body.js .deck,
-      body.js.overview .deck {
-        display: block;
-        height: auto;
-        padding: 0;
-      }
-
-      .slide,
-      body.js .slide,
-      body.js.overview .slide {
-        width: 100%;
-        min-height: auto;
-        height: auto;
-        margin: 0;
-        padding: 34px 28px 48px;
-        display: grid;
-        box-shadow: none;
-        border-bottom: 8px solid #d9e1e3;
-      }
-
-      body.js .slide {
-        display: none;
-      }
-
-      body.js .slide.active,
-      body.js.overview .slide {
-        display: grid;
-      }
-
-      .cover-grid,
-      .grid-2,
-      .grid-2-wide,
-      .grid-3,
-      .result-panel,
-      .self-review {
-        grid-template-columns: 1fr;
-        gap: 24px;
-      }
-
-      .cover-side {
-        padding: 20px 0 0;
-        border-top: 1px solid rgba(204, 239, 233, .55);
-        border-left: 0;
-      }
-
-      .numbered-questions,
-      .flow,
-      .model-layout,
-      .contrast,
-      .references {
-        grid-template-columns: 1fr;
-      }
-
-      .numbered-questions {
-        row-gap: 0;
-      }
-
-      .flow-step,
-      .flow-step + .flow-step {
-        min-height: auto;
-        padding: 20px 0;
-        border-left: 0;
-      }
-
-      .model-column,
-      .model-column:first-child,
-      .model-column:last-child {
-        padding: 20px 0;
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .model-column:last-child {
-        border-bottom: 0;
-      }
-
-      .timeline {
-        grid-template-columns: 1fr;
-      }
-
-      .timeline li,
-      .timeline li + li,
-      .timeline li:last-child {
-        min-height: auto;
-        padding: 16px 0;
-        border-right: 0;
-      }
-
-      .metrics,
-      .delivery-list {
-        grid-template-columns: 1fr;
-      }
-
-      .evidence-pair {
-        grid-template-columns: 1fr;
-      }
-
-      .quality-summary {
-        padding-left: 18px;
-      }
-
-      .contrast section {
-        min-height: auto;
-        padding: 22px 0;
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
-        background: transparent;
-      }
-
-      .contrast section:last-child {
-        border-bottom: 0;
-        background: transparent;
-      }
-
-      .controls {
-        display: none !important;
-      }
-
-      .notes {
-        display: block;
-        position: static;
-        width: 100%;
-        margin-top: 22px;
-        box-shadow: none;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        scroll-behavior: auto !important;
-        animation-duration: .01ms !important;
-        transition-duration: .01ms !important;
-      }
+      .slide { width: calc(100vw - 24px); min-height: 0; padding: 32px 27px; }
+      .cover-grid, .grid-2, .grid-3, .cards, .model, .pipeline { grid-template-columns: 1fr; }
+      .stage + .stage { padding-left: 0; border-left: 0; }
+      .cover-side { padding-left: 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.35); }
     }
 
     @media print {
-      @page {
-        size: A4 landscape;
-        margin: 8mm;
-      }
-
-      html,
-      body,
-      body.js,
-      body.js.overview {
-        overflow: visible;
-        background: #fff;
-      }
-
-      body.js .deck,
-      body.js.overview .deck {
-        display: block;
-        height: auto;
-        padding: 0;
-      }
-
-      .slide,
-      body.js .slide,
-      body.js.overview .slide,
-      body.js .slide.active {
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-        display: grid;
-        margin: 0;
-        padding: 14mm 17mm 11mm;
-        break-after: page;
-        box-shadow: none;
-        opacity: 1;
-      }
-
-      .slide:last-child {
-        break-after: auto;
-      }
-
-      .controls,
-      dialog {
-        display: none !important;
-      }
-
-      .notes {
-        display: block;
-        position: static;
-        width: 100%;
-        margin-top: 10px;
-        box-shadow: none;
-      }
+      body { background: white; }
+      .deck { padding: 0; }
+      .slide { width: 100%; min-height: 720px; margin: 0; box-shadow: none; page-break-after: always; }
+      .controls { display: none; }
     }
   </style>
 </head>
 <body>
-  <main class="deck" aria-label="Apresentação do MVP sobre combustíveis no Rio de Janeiro">
-    <section class="slide cover active" id="slide-1" data-title="Capa">
-      <div class="slide-header">
-        <p class="eyebrow">MVP de dados | PUC-Rio</p>
-      </div>
-      <div class="slide-body cover-grid">
+  <main class="deck">
+    <section class="slide cover active">
+      <div class="cover-grid">
         <div>
-          <h1>Mercado de combustíveis no Rio de Janeiro</h1>
-          <p class="cover-subtitle">Preços de revenda e vendas municipais entre 2022 e 2024</p>
-          <p class="cover-name">Fabiola Dias Carvalho</p>
+          <p class="eyebrow">MVP · Engenharia de Dados</p>
+          <h1>Mercado de combustíveis no Brasil</h1>
+          <p class="lead" style="margin-top:24px">Volume comercializado, concentração e preços de revenda por UF · 2022–2024</p>
+          <p style="margin-top:42px;font-size:1.2rem;font-weight:700">Fabiola Dias Carvalho</p>
         </div>
-        <div class="cover-side">
-          <p>Pipeline em nuvem com dados abertos da Agência Nacional do Petróleo, Gás Natural e Biocombustíveis.</p>
-          <p>Execução registrada no Databricks com evidências reais de carga, qualidade e análise.</p>
-          <div class="cover-mark" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
-        </div>
+        <aside class="cover-side">
+          <p>Fontes públicas da ANP</p>
+          <p>Lakehouse no Databricks</p>
+          <p>Projeto reproduzível e auditável</p>
+          <div class="mark"><span></span><span></span><span></span></div>
+        </aside>
       </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Apresentação final do projeto</span>
-        <span class="slide-number">01</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>O objetivo deste MVP foi construir e executar um pipeline completo, desde a coleta em fonte oficial até a análise no Databricks. A apresentação mostra o caminho técnico e os resultados que podem ser sustentados pelos dados.</p>
-      </aside>
+      <footer class="footer"><span>Projeto PUC · lote nacional executado</span><span>1</span></footer>
     </section>
 
-    <section class="slide" id="slide-2" data-title="Problema">
-      <div class="slide-header">
-        <p class="eyebrow">Contexto</p>
-        <h2>O problema que orientou o MVP</h2>
+    <section class="slide">
+      <header><p class="eyebrow">Ponto de partida</p><h2>O problema veio antes dos dados</h2></header>
+      <div>
+        <p class="lead">Quis entender como o volume declarado por vendedor se distribui entre as UFs, quão concentrado é esse mercado e como esse contexto conversa com preços pesquisados e escala municipal de vendas.</p>
+        <p class="quote">“Como evoluiu o volume de gasolina C e etanol hidratado declarado por vendedor nas UFs, qual é a estrutura de concentração observada e como ela se relaciona, de forma descritiva, com preços de revenda e escala municipal?”</p>
       </div>
-      <div class="slide-body">
-        <p class="lead">O mercado de combustíveis varia entre municípios, mas preço, volume vendido e cobertura da pesquisa não aparecem prontos em uma única base de dados.</p>
-        <p class="statement">Como os preços de revenda de gasolina C e etanol hidratado variaram entre os municípios do Rio de Janeiro e como esses padrões se associam, de forma descritiva, ao volume anual vendido?</p>
-        <p class="note">A análise é exploratória. A relação entre preço e volume não permite afirmar causalidade.</p>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Problema de negócio e pergunta central</span>
-        <span class="slide-number">02</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>A ANP publica a pesquisa de preço com frequência semanal e as vendas municipais com granularidade anual. O projeto precisou tornar essas fontes comparáveis, preservando as diferenças entre elas e sem concluir que uma variável causa a outra.</p>
-      </aside>
+      <footer class="footer"><span>Objetivo e perguntas registrados antes da coleta</span><span>2</span></footer>
     </section>
 
-    <section class="slide" id="slide-3" data-title="Perguntas">
-      <div class="slide-header">
-        <p class="eyebrow">Planejamento</p>
-        <h2>Perguntas definidas antes da análise</h2>
+    <section class="slide">
+      <header><p class="eyebrow">Perguntas de análise</p><h2>O que o projeto precisa responder</h2></header>
+      <div class="cards">
+        <article class="card"><span class="number">01</span><h3>Vendedores</h3><p>Quem declara mais volume por UF, produto e mês? Como se comportam Vibra, Ipiranga, Raízen e Ale?</p></article>
+        <article class="card"><span class="number">02</span><h3>Concentração</h3><p>Qual é a participação do líder, dos três maiores e o HHI em cada mercado estadual?</p></article>
+        <article class="card"><span class="number">03</span><h3>Preços</h3><p>Como variam mediana, dispersão e cobertura da pesquisa de preços por UF?</p></article>
+        <article class="card"><span class="number">04</span><h3>Reconciliação</h3><p>O volume da logística é compatível com a soma municipal anual? Onde há diferença de escopo?</p></article>
+        <article class="card"><span class="number">05</span><h3>Relações</h3><p>Que padrões descritivos aparecem entre preço, concentração e escala do volume?</p></article>
+        <article class="card"><span class="number">06</span><h3>Limites</h3><p>O que não pode ser afirmado ao cruzar vendedor, posto, bandeira e preço?</p></article>
       </div>
-      <div class="slide-body">
-        <ol class="numbered-questions">
-          <li>Quais municípios têm os preços medianos mais altos e mais baixos para gasolina C e etanol hidratado?</li>
-          <li>Onde a dispersão de preços entre postos e semanas pesquisadas foi maior?</li>
-          <li>Como volume anual, preço mediano e dispersão se associam no nível municipal?</li>
-          <li>Que municípios combinam volume alto com preço relativo alto, ou volume baixo com preço relativo baixo?</li>
-          <li>Como as bandeiras se posicionam dentro do mesmo município, semana e produto?</li>
-          <li>Qual parte dos municípios com vendas registradas possui observação de preço?</li>
-        </ol>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Objetivo e perguntas de negócio</span>
-        <span class="slide-number">03</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>As perguntas foram documentadas antes da carga. Nem todas precisam virar uma conclusão longa na apresentação, mas o pipeline deixou consultas reproduzíveis para rankings, dispersão, quadrantes, bandeiras e cobertura.</p>
-      </aside>
+      <footer class="footer"><span>Sem inferência causal</span><span>3</span></footer>
     </section>
 
-    <section class="slide" id="slide-4" data-title="Recorte">
-      <div class="slide-header">
-        <p class="eyebrow">Decisões metodológicas</p>
-        <h2>Recorte do estudo e regra de publicação</h2>
-      </div>
-      <div class="slide-body grid-2-wide">
-        <div>
-          <ol class="timeline" aria-label="Período analisado">
-            <li><strong>2022</strong>Primeiro ano do recorte, com pesquisa de preço em 33 municípios por produto.</li>
-            <li><strong>2023</strong>Pesquisa disponível em 32 municípios por produto no universo de vendas.</li>
-            <li><strong>2024</strong>Último ano do recorte, com a mesma base de comparação anual.</li>
-          </ol>
-        </div>
-        <div>
-          <ul class="simple-list">
-            <li><strong>Estado:</strong> Rio de Janeiro.</li>
-            <li><strong>Integração principal:</strong> gasolina C e etanol hidratado.</li>
-            <li><strong>Chave comum:</strong> código IBGE, ano e produto analítico.</li>
-            <li><strong>Publicação do ranking:</strong> pelo menos 3 postos distintos e 4 semanas pesquisadas.</li>
-          </ul>
-          <div class="rule-box"><strong>Leitura correta:</strong> ausência de preço na pesquisa não significa ausência de mercado ou de posto no município.</div>
-        </div>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">UF RJ, anos 2022 a 2024</span>
-        <span class="slide-number">04</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>Eu mantive outros combustíveis na camada de preços quando presentes, mas concentrei a integração principal em produtos que aparecem de forma compatível nas duas fontes. A regra de cobertura impede que um ranking seja apresentado a partir de poucas observações.</p>
-      </aside>
-    </section>
-
-    <section class="slide" id="slide-5" data-title="Fontes">
-      <div class="slide-header">
-        <p class="eyebrow">Busca pelos dados</p>
-        <h2>Fontes oficiais e granularidades diferentes</h2>
-      </div>
-      <div class="slide-body">
-        <table class="source-table">
-          <thead>
-            <tr>
-              <th>Fonte ANP</th>
-              <th>Granularidade de origem</th>
-              <th>Uso no projeto</th>
-            </tr>
-          </thead>
+    <section class="slide">
+      <header><p class="eyebrow">Fontes oficiais</p><h2>Quatro bases, quatro granularidades</h2></header>
+      <div>
+        <table>
+          <thead><tr><th>Base ANP</th><th>Granularidade</th><th>Uso no projeto</th></tr></thead>
           <tbody>
-            <tr>
-              <td><a href="https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/serie-historica-de-precos-de-combustiveis">Série histórica de preços</a></td>
-              <td>Posto × produto × data de coleta</td>
-              <td>Preço de venda, produto, bandeira, CNPJ e data.</td>
-            </tr>
-            <tr>
-              <td><a href="https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/vendas-de-derivados-de-petroleo-e-biocombustiveis">Vendas de derivados e biocombustíveis</a></td>
-              <td>Município × produto × ano</td>
-              <td>Volume anual de gasolina C e etanol hidratado.</td>
-            </tr>
-            <tr>
-              <td><a href="https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/dados-cadastrais-dos-revendedores-varejistas-de-combustiveis-automotivos">Cadastro de revendedores</a></td>
-              <td>Revendedor × data de extração</td>
-              <td>Contexto e rastreabilidade do cadastro atual.</td>
-            </tr>
+            <tr><td>Logística 02</td><td>vendedor × UF × produto × mês</td><td>volume líquido, participação, ranking e concentração</td></tr>
+            <tr><td>Preços semanais</td><td>posto × produto × data</td><td>mediana, dispersão e cobertura do preço de revenda</td></tr>
+            <tr><td>Vendas municipais</td><td>município × produto × ano</td><td>escala municipal e reconciliação anual</td></tr>
+            <tr><td>Cadastro de revendedores</td><td>revenda × data de extração</td><td>fotografia atual da rede e das bandeiras</td></tr>
           </tbody>
         </table>
-        <p class="keyline">A fonte de vendas fornece o código IBGE. Por isso, ela foi a referência para a conciliação dos municípios.</p>
+        <div class="callout" style="margin-top:28px"><strong>Decisão importante.</strong> A empresa que declara a venda não é automaticamente a bandeira do posto. O projeto não cria essa ligação sem uma chave pública compatível.</div>
       </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Dados abertos da ANP</span>
-        <span class="slide-number">05</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>A diferença de granularidade define o método. Não comparei venda anual diretamente com uma observação semanal de preço. Primeiro consolidei os preços por município, produto e semana, depois gerei a medida anual.</p>
-      </aside>
+      <footer class="footer"><span>Fontes e links documentados no repositório</span><span>4</span></footer>
     </section>
 
-    <section class="slide" id="slide-6" data-title="Coleta">
-      <div class="slide-header">
-        <p class="eyebrow">Coleta e persistência</p>
-        <h2>Arquivos brutos preservados e carga rastreável</h2>
+    <section class="slide">
+      <header><p class="eyebrow">Arquitetura</p><h2>Da fonte ao resultado analítico</h2></header>
+      <div class="pipeline">
+        <article class="stage"><p class="tag">Coleta</p><h3>Arquivos oficiais</h3><p>URLs, data de acesso, tamanho e hash são gravados no manifesto local.</p></article>
+        <article class="stage"><p class="tag">Bronze</p><h3>Preservação</h3><p>Arquivo, fonte, data de ingestão e lote acompanham cada linha. Cargas são acumuladas por lote.</p></article>
+        <article class="stage"><p class="tag">Silver</p><h3>Conformação</h3><p>Datas, decimais, UFs, produtos, CNPJ, vendedor e flags de qualidade são padronizados.</p></article>
+        <article class="stage"><p class="tag">Gold</p><h3>Análise</h3><p>Dimensões, fatos, participação, HHI, preço por UF, reconciliação e catálogo são publicados.</p></article>
       </div>
-      <div class="slide-body">
-        <div class="flow" aria-label="Fluxo da coleta">
-          <div class="flow-step">
-            <p class="flow-label">Origem</p>
-            <h3>ANP</h3>
-            <p>Seis ZIPs semestrais de preços, dois CSVs de vendas municipais e um CSV de cadastro atual.</p>
-          </div>
-          <div class="flow-step">
-            <p class="flow-label">Nuvem</p>
-            <h3>Volume</h3>
-            <p>Arquivos enviados para pastas separadas de preços, vendas, cadastro e configuração.</p>
-          </div>
-          <div class="flow-step">
-            <p class="flow-label">Evidência</p>
-            <h3>Manifestos</h3>
-            <p>Hash SHA-256, URL, data, codificação, cabeçalhos e quantidade de linhas registrados na inspeção.</p>
-          </div>
-          <div class="flow-step">
-            <p class="flow-label">Proteção</p>
-            <h3>Git</h3>
-            <p>Dados brutos e arquivos locais ficam fora do repositório. Código e documentação permanecem reproduzíveis.</p>
-          </div>
-        </div>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Coleta, persistência e evidência da origem</span>
-        <span class="slide-number">06</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>O primeiro notebook valida os arquivos enviados, registra os hashes e extrai os ZIPs. Assim, a execução consegue relacionar cada lote aos arquivos de origem, sem depender apenas de uma cópia manual no ambiente.</p>
-      </aside>
+      <footer class="footer"><span>Databricks · Delta Lake · esquema nacional separado</span><span>5</span></footer>
     </section>
 
-    <section class="slide" id="slide-7" data-title="Pipeline">
-      <div class="slide-header">
-        <p class="eyebrow">Carga no Databricks</p>
-        <h2>Pipeline do dado bruto à consulta analítica</h2>
-      </div>
-      <div class="slide-body">
-        <div class="flow" aria-label="Camadas do pipeline">
-          <div class="flow-step">
-            <p class="flow-label">01</p>
-            <h3>Bronze</h3>
-            <p>Cópia bruta com lote, arquivo de origem e data de ingestão. A camada preserva a rastreabilidade da carga.</p>
-          </div>
-          <div class="flow-step">
-            <p class="flow-label">02</p>
-            <h3>Silver</h3>
-            <p>Tipos, datas, CNPJ, produtos e municípios são padronizados. As flags de qualidade acompanham os registros.</p>
-          </div>
-          <div class="flow-step">
-            <p class="flow-label">03</p>
-            <h3>Gold</h3>
-            <p>Dimensões, fatos de preço e venda, cobertura, outliers, catálogo e regras de qualidade ficam disponíveis em Delta.</p>
-          </div>
-          <div class="flow-step">
-            <p class="flow-label">04</p>
-            <h3>SQL</h3>
-            <p>A consulta salva 04 - Análises Gerenciais ANP RJ consolida os resultados e as evidências para a entrega.</p>
-          </div>
-        </div>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Bronze, Silver, Gold e análise</span>
-        <span class="slide-number">07</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>O pipeline foi dividido em notebooks para manter responsabilidades claras. Depois de reexecutar uma camada, as etapas posteriores devem ser atualizadas para que os resultados reflitam o mesmo lote.</p>
-      </aside>
-    </section>
+    <section class="slide">
+      <header><p class="eyebrow">Modelagem</p><h2>Constelação de fatos, não um cruzamento forçado</h2></header>
+      <div class="model">
+        <div class="schema">dim_tempo ─┐
+dim_uf ─────┼─ fato_venda_empresa_uf_mes
+dim_produto ┤          ├─ participação
+dim_empresa ┘          ├─ concentração
+                         └─ mart_mercado_uf_mes
+                                     ▲
+                    fato_preco_uf_mes
 
-    <section class="slide" id="slide-8" data-title="Transformações">
-      <div class="slide-header">
-        <p class="eyebrow">Transformação</p>
-        <h2>Decisões que permitiram integrar as fontes</h2>
-      </div>
-      <div class="slide-body grid-2-wide">
-        <ol class="process-list">
-          <li><strong>Normalização de CNPJ.</strong> A chave chega com formatações diferentes e passa a ter somente os dígitos necessários para a validação.</li>
-          <li><strong>Conversão de números.</strong> Vírgula decimal dos arquivos brasileiros é convertida para tipo numérico no Spark.</li>
-          <li><strong>Conciliação municipal.</strong> O nome da pesquisa é normalizado e ligado ao código IBGE presente na fonte de vendas.</li>
-        </ol>
-        <ol class="process-list" start="4">
-          <li><strong>Mapeamento de produtos.</strong> Uma tabela versionada torna explícita a equivalência entre os produtos publicados pelas fontes.</li>
-          <li><strong>Agregação em duas etapas.</strong> Preço por posto e data vira estatística semanal, depois medida anual baseada nas medianas semanais.</li>
-          <li><strong>Cadastro separado.</strong> O cadastro atual entra como fotografia de contexto, sem afirmar como a rede de postos era no passado.</li>
-        </ol>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Regras explícitas e auditáveis</span>
-        <span class="slide-number">08</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>O ponto mais importante foi usar o código IBGE como chave geográfica. O nome livre do município na pesquisa de preços não é uma chave suficiente para integrar fontes diferentes. A agregação semanal também evita que semanas com muitas coletas dominem a medida anual.</p>
-      </aside>
-    </section>
+dim_municipio ─ preço municipal ─ vendas municipais
+                     └─ mart municipal anual
 
-    <section class="slide" id="slide-9" data-title="Modelo">
-      <div class="slide-header">
-        <p class="eyebrow">Modelagem e catálogo</p>
-        <h2>Constelação de fatos para auditoria e análise</h2>
-      </div>
-      <div class="slide-body">
-        <div class="model-layout">
-          <section class="model-column">
-            <h3>Dimensões</h3>
-            <p>Referências conformadas que mantêm as chaves de análise consistentes.</p>
-            <ul>
-              <li>Tempo</li>
-              <li>Município</li>
-              <li>Produto</li>
-              <li>Revenda e bandeira</li>
-              <li>Lote de carga</li>
-            </ul>
-          </section>
-          <section class="model-column">
-            <h3>Fatos</h3>
-            <p>As diferentes granularidades são preservadas, em vez de resumir tudo em uma única tabela.</p>
-            <ul>
-              <li>Preço coletado por posto e data</li>
-              <li>Preço municipal semanal</li>
-              <li>Preço municipal anual</li>
-              <li>Venda municipal anual</li>
-              <li>Cadastro atual de revenda</li>
-            </ul>
-          </section>
-          <section class="model-column">
-            <h3>Mart integrado</h3>
-            <p>O fato de mercado junta preço e venda para mostrar tanto a análise disponível quanto as lacunas.</p>
-            <ul>
-              <li>Cobertura da pesquisa</li>
-              <li>Preço relativo estadual</li>
-              <li>Volume anual em litros</li>
-              <li>Regras e outliers</li>
-            </ul>
-          </section>
-        </div>
-        <p class="keyline">Chave de integração: código IBGE + ano + produto analítico.</p>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Modelo dimensional e catálogo observado</span>
-        <span class="slide-number">09</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>O catálogo produzido no notebook de qualidade registra, por atributo, tipo Spark, nulos, distintos, mínimo, máximo e categorias mais frequentes. O mart anual facilita a análise, mas os fatos detalhados permanecem disponíveis para auditoria.</p>
-      </aside>
-    </section>
-
-    <section class="slide" id="slide-10" data-title="Execução">
-      <div class="slide-header">
-        <p class="eyebrow">Evidência de execução</p>
-        <h2>O lote carregado mantém a ligação entre cada etapa</h2>
-      </div>
-      <div class="slide-body grid-2-wide">
+dim_revenda ─ cadastro atual ─ dim_bandeira</div>
         <div>
-          <div class="metrics" aria-label="Métricas do lote">
-            <div class="metric">
-              <span class="metric-value">2.710.038</span>
-              <span class="metric-label">observações de preço carregadas na Bronze</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">212.637</span>
-              <span class="metric-label">preços válidos no recorte RJ 2022–2024</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">212.631</span>
-              <span class="metric-label">preços usados nas agregações Gold</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value">194</span>
-              <span class="metric-label">combinações de preço e venda integradas</span>
-            </div>
-          </div>
-          <p class="keyline">Lote: anp_rj_20260906T022801Z_5a797990</p>
+          <div class="rule"><strong>Preço × volume por UF</strong><br>Chave: UF + mês + produto. Cada lado é agregado antes do join.</div>
+          <div class="rule"><strong>Logística × municipal</strong><br>Chave: UF + ano + grupo de produto. A comparação é anual e mostra os meses disponíveis.</div>
+          <div class="rule"><strong>Cadastro × histórico</strong><br>O CNPJ serve para auditoria. A fotografia atual não reescreve o passado.</div>
         </div>
-        <figure class="evidence">
-          <button type="button" class="evidence-trigger" data-image="../docs/capturas_databricks/01_reconciliacao_etapas.png" data-caption="Reconciliação de etapas da consulta salva no Databricks. Clique para ampliar.">
-            <img src="../docs/capturas_databricks/01_reconciliacao_etapas.png" alt="Resultado da reconciliação de etapas no Databricks, com contagens das camadas de preço, venda e mercado integrado.">
-          </button>
-          <figcaption>Reconciliação de etapas da consulta salva 04 - Análises Gerenciais ANP RJ.</figcaption>
-        </figure>
       </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Carga concluída e reconciliada</span>
-        <span class="slide-number">10</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>A diferença entre 212.637 preços válidos e 212.631 registros usados nas agregações decorre do desempate determinístico da chave natural. A tela à direita é uma evidência da execução no Databricks, não uma simulação.</p>
-      </aside>
+      <footer class="footer"><span>Modelo e linhagem documentados no catálogo</span><span>6</span></footer>
     </section>
 
-    <section class="slide" id="slide-11" data-title="Qualidade">
-      <div class="slide-header">
-        <p class="eyebrow">Análise de qualidade</p>
-        <h2>Qualidade foi verificada por atributo e por regra</h2>
+    <section class="slide">
+      <header><p class="eyebrow">Métricas</p><h2>Como participação e concentração são calculadas</h2></header>
+      <div>
+        <div class="grid-3">
+          <article class="metric"><h3>Volume líquido</h3><p>Soma do volume declarado por vendedor. Ajustes negativos continuam visíveis no fato de origem.</p></article>
+          <article class="metric"><h3>Participação</h3><p>Ranking usa saldo positivo do vendedor sobre o total positivo da mesma UF, mês e produto.</p></article>
+          <article class="metric"><h3>Concentração</h3><p>HHI, participação da líder e Top 3 mostram se o volume está distribuído ou concentrado.</p></article>
+        </div>
+        <div class="formula">participacao_pct = volume positivo do vendedor / total positivo da UF · HHI = Σ(participacao_pct / 100)² × 10.000</div>
       </div>
-      <div class="slide-body grid-2">
+      <footer class="footer"><span>Regra explícita e reproduzível</span><span>7</span></footer>
+    </section>
+
+    <section class="slide">
+      <header><p class="eyebrow">Qualidade e catálogo</p><h2>Qualidade medida no lote executado</h2></header>
+      <div class="grid-2">
         <div>
-          <h3>Perfil de atributos</h3>
-          <ul class="simple-list">
-            <li>Tipo Spark, total de registros, nulos e valores distintos.</li>
-            <li>Mínimo, máximo e categorias mais frequentes quando aplicável.</li>
-            <li>Perfil gerado para tabelas Silver e Gold no próprio pipeline.</li>
+          <ul class="list">
+            <li><strong>464 atributos perfilados:</strong> tipo, nulos, distintos, mínimo, máximo e categorias frequentes.</li>
+            <li><strong>19 regras aprovadas:</strong> sem preço inválido, CNPJ fora do padrão, produto não mapeado ou chave de venda duplicada.</li>
+            <li><strong>7 regras informativas:</strong> 941 UFs ausentes, 337 ajustes negativos e 43.790 outliers continuam visíveis para auditoria.</li>
+            <li><strong>Critério:</strong> ocorrência não é apagada; recebe tabela, percentual e status para orientar a leitura.</li>
           </ul>
         </div>
-        <div class="quality-summary">
-          <h3>14 regras executadas</h3>
-          <p>As regras cobrem domínio, integridade, duplicidade, cobertura e outliers. Elas ficam registradas em tabela para consulta e auditoria.</p>
-          <div class="quality-bar" aria-label="10 regras aprovadas e 4 em atenção">
-            <span title="10 regras aprovadas"></span><span title="4 regras em atenção"></span>
-          </div>
-          <div class="quality-labels">
-            <span><strong>10 aprovadas</strong> 71,4%</span>
-            <span><strong>4 em atenção</strong> 28,6%</span>
-          </div>
-        </div>
+        <figure class="evidence"><img src="../docs/capturas_databricks/06_qualidade.png" alt="Resultado das regras de qualidade no Databricks"><figcaption>Regras de qualidade publicadas para o lote nacional.</figcaption></figure>
       </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Perfil, regras e resultados persistidos</span>
-        <span class="slide-number">11</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>Uma regra em atenção não significa que a carga falhou. Algumas atenções representam uma limitação da fonte, como venda municipal registrada sem observação de preço na pesquisa. O importante foi torná-las visíveis e não escondê-las da análise.</p>
-      </aside>
+      <footer class="footer"><span>gold_catalogo_atributos · gold_resultado_regra_qualidade</span><span>8</span></footer>
     </section>
 
-    <section class="slide" id="slide-12" data-title="Atenções">
-      <div class="slide-header">
-        <p class="eyebrow">Resultado da qualidade</p>
-        <h2>Quatro sinais exigiram leitura cuidadosa</h2>
-      </div>
-      <div class="slide-body grid-2-wide">
+    <section class="slide">
+      <header><p class="eyebrow">Análise principal</p><h2>Ranking, concentração e preço no resultado final</h2></header>
+      <div class="grid-2">
         <div>
-          <table class="attention-table">
-            <thead>
-              <tr>
-                <th>Regra em atenção</th>
-                <th>Ocorrências</th>
-                <th>Tratamento</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Venda sem preço</td>
-                <td>358<br>64,8551%</td>
-                <td>Interpretada como lacuna de cobertura da pesquisa.</td>
-              </tr>
-              <tr>
-                <td>Cobertura abaixo do mínimo</td>
-                <td>2<br>0,3623%</td>
-                <td>Não entra em ranking comparativo.</td>
-              </tr>
-              <tr>
-                <td>Chave natural repetida</td>
-                <td>12<br>0,0056%</td>
-                <td>Desempate determinístico nas agregações.</td>
-              </tr>
-              <tr>
-                <td>Outlier por IQR</td>
-                <td>3.093<br>1,4546%</td>
-                <td>Marcado para análise; dado detalhado preservado.</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="note">Também não houve preço inválido, CNPJ fora do formato, município sem código IBGE ou produto sem mapeamento.</p>
-        </div>
-        <div class="evidence-pair">
-          <figure class="evidence">
-            <button type="button" class="evidence-trigger" data-image="../docs/capturas_databricks/02_regras_qualidade.png" data-caption="Tabela de regras de qualidade executadas no Databricks. Clique para ampliar.">
-              <img src="../docs/capturas_databricks/02_regras_qualidade.png" alt="Tabela do Databricks com as regras de qualidade, tabelas avaliadas, descrições e quantidades afetadas.">
-            </button>
-            <figcaption>Regras e ocorrências.</figcaption>
-          </figure>
-          <figure class="evidence">
-            <button type="button" class="evidence-trigger" data-image="../docs/capturas_databricks/02b_status_qualidade.png" data-caption="Status das regras de qualidade no Databricks. Clique para ampliar.">
-              <img src="../docs/capturas_databricks/02b_status_qualidade.png" alt="Tabela do Databricks com percentuais e status aprovada ou atenção para regras de qualidade.">
-            </button>
-            <figcaption>Status aprovado ou atenção.</figcaption>
-          </figure>
-        </div>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Exceções registradas, não apagadas</span>
-        <span class="slide-number">12</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>As duplicidades não foram removidas do fato detalhado, porque isso apagaria informação de auditoria. Apenas a agregação escolhe uma linha de forma determinística. Da mesma forma, os outliers continuam disponíveis com uma flag, em vez de desaparecerem por uma regra automática.</p>
-      </aside>
-    </section>
-
-    <section class="slide" id="slide-13" data-title="Cobertura">
-      <div class="slide-header">
-        <p class="eyebrow">Principal limite analítico</p>
-        <h2>A pesquisa de preço cobriu cerca de um terço do universo de vendas</h2>
-      </div>
-      <div class="slide-body grid-2-wide">
-        <div>
-          <p class="lead">Cada produto e ano possui 92 municípios com vendas válidas. A pesquisa de preços alcançou 33 municípios em 2022 e 32 em 2023 e 2024.</p>
-          <ul class="bar-chart" aria-label="Cobertura por ano">
-            <li><span>2022</span><div class="bar-track"><span style="width:35.87%"></span></div><strong>35,87%</strong></li>
-            <li><span>2023</span><div class="bar-track"><span style="width:34.78%"></span></div><strong>34,78%</strong></li>
-            <li><span>2024</span><div class="bar-track"><span style="width:34.78%"></span></div><strong>34,78%</strong></li>
-          </ul>
-          <p class="keyline">A cobertura é um resultado da análise e a principal condição para interpretar rankings e comparações.</p>
-        </div>
-        <div class="evidence-pair">
-          <figure class="evidence">
-            <button type="button" class="evidence-trigger" data-image="../docs/capturas_databricks/03_cobertura_pesquisa.png" data-caption="Base da cobertura da pesquisa no Databricks. Clique para ampliar.">
-              <img src="../docs/capturas_databricks/03_cobertura_pesquisa.png" alt="Tabela do Databricks com cobertura da pesquisa por ano e produto.">
-            </button>
-            <figcaption>Universo e municípios com pesquisa.</figcaption>
-          </figure>
-          <figure class="evidence">
-            <button type="button" class="evidence-trigger" data-image="../docs/capturas_databricks/03b_cobertura_percentual.png" data-caption="Percentual de cobertura da pesquisa no Databricks. Clique para ampliar.">
-              <img src="../docs/capturas_databricks/03b_cobertura_percentual.png" alt="Tabela do Databricks com percentuais de cobertura por ano e produto.">
-            </button>
-            <figcaption>Percentual de cobertura.</figcaption>
-          </figure>
-        </div>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Cobertura por município, produto e ano</span>
-        <span class="slide-number">13</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>O denominador considera combinações município-produto-ano com venda válida. Portanto, não considero um município sem venda de etanol como “sem preço” para etanol. A ausência da pesquisa deve ser lida como ausência na amostra da ANP.</p>
-      </aside>
-    </section>
-
-    <section class="slide" id="slide-14" data-title="Ranking">
-      <div class="slide-header">
-        <p class="eyebrow">Resultado analítico</p>
-        <h2>Exemplo: etanol hidratado em 2022</h2>
-      </div>
-      <div class="slide-body result-panel">
-        <div class="result-copy">
-          <p class="lead">O ranking usa mediana anual e só publica municípios que atendem à regra de cobertura.</p>
-          <div class="finding">
-            <span class="finding-value">R$ 6,79</span>
-            <p><strong>Angra dos Reis</strong> apresentou essa mediana anual no etanol hidratado em 2022.</p>
-          </div>
-          <div class="finding">
-            <span class="finding-value">+21,5%</span>
-            <p>Acima da referência estadual, com 47 semanas pesquisadas e 15 postos distintos.</p>
-          </div>
-        </div>
-        <figure class="evidence">
-          <button type="button" class="evidence-trigger" data-image="../docs/capturas_databricks/04_ranking_etanol_2022.png" data-caption="Ranking municipal de etanol hidratado de 2022 no Databricks. Clique para ampliar.">
-            <img src="../docs/capturas_databricks/04_ranking_etanol_2022.png" alt="Resultado do ranking municipal de preço de etanol hidratado em 2022 no Databricks.">
-          </button>
-          <figcaption>Ranking de preço mediano anual de etanol hidratado em 2022.</figcaption>
-        </figure>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Ranking condicionado à cobertura mínima</span>
-        <span class="slide-number">14</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>Esse exemplo mostra como ler os rankings. O valor de preço vem acompanhado de semanas e postos distintos, porque uma mediana calculada com poucas observações teria pouco apoio. O ranking não representa um censo de todos os revendedores do município.</p>
-      </aside>
-    </section>
-
-    <section class="slide" id="slide-15" data-title="Preço e volume">
-      <div class="slide-header">
-        <p class="eyebrow">Resultado analítico</p>
-        <h2>Preço e volume apresentam associação negativa, sem relação causal</h2>
-      </div>
-      <div class="slide-body grid-2">
-        <div>
-          <p class="lead">Nas seis combinações publicáveis de produto e ano, a associação entre log do volume vendido e mediana anual de preço foi negativa, de fraca a moderada.</p>
-          <div class="correlations">
-            <div class="correlation">
-              <p><strong>Etanol hidratado, 2023</strong><br>32 municípios analisados.</p>
-              <strong>-0,3847</strong>
-            </div>
-            <div class="correlation">
-              <p><strong>Gasolina C, 2023</strong><br>32 municípios analisados.</p>
-              <strong>-0,2741</strong>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="interpretation"><strong>Interpretação:</strong> municípios com maior volume tenderam a apresentar preço mediano menor nesses exemplos. O resultado descreve os dados observados e não identifica a causa da diferença.</div>
-          <ul class="simple-list" style="margin-top: 24px">
-            <li>Venda municipal tem frequência anual.</li>
-            <li>Preço vem de uma pesquisa amostral semanal.</li>
-            <li>Custos, concorrência e perfil local não entram como controles causais nesta análise.</li>
+          <ul class="list">
+            <li><strong>Ranking:</strong> no DF, em 2023, Vibra declarou 38,61 milhões de litros de etanol (27,980%), seguida de Ipiranga e Raízen.</li>
+            <li><strong>Concentração:</strong> o HHI variou fortemente entre UFs; no AP, etanol de 2022 teve HHI 9.574 e Top 3 de 99,95%.</li>
+            <li><strong>Preço e volume:</strong> as correlações são descritivas. Para etanol em 2023, a correlação entre log(volume) e preço foi -0,7589.</li>
+            <li><strong>Cobertura:</strong> a leitura de preço fica condicionada à pesquisa da ANP e aparece junto do indicador de cobertura.</li>
           </ul>
         </div>
-      </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Correlação descritiva, não causalidade</span>
-        <span class="slide-number">15</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>Eu uso a correlação apenas como um resumo da associação linear nas combinações que passaram pela cobertura. Para uma conclusão causal seriam necessários dados adicionais e um desenho analítico que controlasse fatores que também interferem no preço e no volume.</p>
-      </aside>
-    </section>
-
-    <section class="slide" id="slide-16" data-title="Limites">
-      <div class="slide-header">
-        <p class="eyebrow">Interpretação responsável</p>
-        <h2>O que os resultados respondem e o que permanece limitado</h2>
-      </div>
-      <div class="slide-body">
-        <div class="contrast">
-          <section>
-            <h3>Evidência produzida</h3>
-            <ul>
-              <li>Rankings municipais com uma regra explícita de cobertura.</li>
-              <li>Medidas de dispersão e preço relativo estadual nas tabelas Gold.</li>
-              <li>Integração de preço e volume na granularidade município-produto-ano.</li>
-              <li>Consulta reproduzível para cobertura, quadrantes, bandeiras e outliers.</li>
-            </ul>
-          </section>
-          <section>
-            <h3>Cuidados necessários</h3>
-            <ul>
-              <li>A pesquisa de preço cobre cerca de 35% dos municípios com vendas.</li>
-              <li>Ausência de pesquisa não significa ausência de mercado.</li>
-              <li>Correlação não demonstra que volume causa preço, ou o contrário.</li>
-              <li>O cadastro de revendedores é atual e não reconstrói o status histórico de um posto.</li>
-            </ul>
-          </section>
+        <div class="evidence-grid">
+          <figure class="evidence"><img src="../docs/capturas_databricks/08_concentracao_uf.png" alt="Concentração por UF"><figcaption>HHI, Top 3 e líder por UF e produto.</figcaption></figure>
+          <figure class="evidence"><img src="../docs/capturas_databricks/09_preco_volume.png" alt="Correlação descritiva de preço e volume"><figcaption>Relação descritiva entre preço, volume e concentração.</figcaption></figure>
         </div>
       </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Resultados sustentados pelos dados disponíveis</span>
-        <span class="slide-number">16</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>Esta separação evita extrapolar o resultado. O pipeline consegue responder às perguntas planejadas dentro da cobertura observada, mas não transforma a pesquisa da ANP em um retrato completo de todos os postos do estado.</p>
-      </aside>
+      <footer class="footer"><span>Consultas reproduzíveis em notebooks/04_analises.sql</span><span>9</span></footer>
     </section>
 
-    <section class="slide" id="slide-17" data-title="Autoavaliação">
-      <div class="slide-header">
-        <p class="eyebrow">Autoavaliação</p>
-        <h2>Atingimentos, dificuldades e próximos passos</h2>
-      </div>
-      <div class="slide-body self-review">
+    <section class="slide">
+      <header><p class="eyebrow">Reconciliação</p><h2>Diferença entre fontes é resultado, não erro a esconder</h2></header>
+      <div class="grid-2">
         <div>
-          <section class="review-section">
-            <h3>O que foi atingido</h3>
-            <p>O projeto executou o fluxo completo de coleta, carga, modelagem, catálogo por atributo, regras de qualidade e consultas analíticas. As capturas registram tanto a execução em nuvem quanto resultados usados na discussão.</p>
-          </section>
-          <section class="review-section">
-            <h3>Dificuldades tratadas</h3>
-            <p>A pesquisa de preços não traz a chave IBGE, as fontes usam granularidades temporais diferentes e a cobertura municipal é parcial. A modelagem preservou essas limitações em vez de escondê-las.</p>
-          </section>
+          <p class="lead">Foram produzidas 162 comparações UF × ano × produto. A tabela mostra os dois volumes, a diferença percentual e o número de meses observados.</p>
+          <p class="muted" style="margin-top:24px">Em 76 comparações há divergência de escopo. Em 2022, por exemplo, o etanol de Mato Grosso ficou compatível (0,133%), enquanto Minas Gerais mostrou diferença de -1,864%. A divergência é exposta, não compensada artificialmente.</p>
         </div>
-        <div>
-          <section class="review-section">
-            <h3>Próximos passos</h3>
-            <ul>
-              <li>Ampliar o período e acompanhar a estabilidade da cobertura.</li>
-              <li>Incluir variáveis contextuais para aprofundar a leitura de preço e volume.</li>
-              <li>Explorar bandeiras e quadrantes com novas evidências visuais.</li>
-              <li>Adicionar validação complementar dos dígitos verificadores de CNPJ.</li>
-            </ul>
-          </section>
-          <p class="keyline">A principal contribuição do MVP é deixar a análise reproduzível e auditável, inclusive nas suas limitações.</p>
-        </div>
+        <figure class="evidence"><img src="../docs/capturas_databricks/10_reconciliacao_volume.png" alt="Reconciliação anual de volumes por UF"><figcaption>Comparação entre a Logística 02 e o agregado municipal por UF e ano.</figcaption></figure>
       </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Discussão final do atingimento dos objetivos</span>
-        <span class="slide-number">17</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>A autoavaliação deve ser honesta: o objetivo de construir e executar o pipeline foi atingido, mas a cobertura parcial limita generalizações. As extensões propostas não são pendências escondidas, e sim caminhos para tornar uma nova versão mais rica.</p>
-      </aside>
+      <footer class="footer"><span>gold_reconciliacao_volume_uf_ano</span><span>10</span></footer>
     </section>
 
-    <section class="slide closing" id="slide-18" data-title="Entrega">
-      <div class="slide-header">
-        <p class="eyebrow">Reprodutibilidade e entrega</p>
-        <h2>O projeto reúne código, documentação e evidências da execução</h2>
+    <section class="slide">
+      <header><p class="eyebrow">Limites</p><h2>O que os dados permitem afirmar — e o que não permitem</h2></header>
+      <div class="grid-2">
+        <div><h3 class="accent">Permite</h3><ul class="list"><li>Descrever volumes declarados por vendedor.</li><li>Calcular participação e concentração por UF, mês e produto.</li><li>Comparar medidas agregadas de preço e volume.</li><li>Exibir cobertura e diferença entre fontes.</li></ul></div>
+        <div><h3 class="gold">Não permite</h3><ul class="list"><li>Atribuir preço de posto a uma empresa vendedora.</li><li>Transformar bandeira em sinônimo de vendedor.</li><li>Reconstruir o cadastro histórico a partir da fotografia atual.</li><li>Concluir causalidade por correlação ou concentração.</li></ul></div>
       </div>
-      <div class="slide-body">
-        <ul class="delivery-list">
-          <li>Notebooks de preparação, Bronze, transformação, qualidade e análises SQL.</li>
-          <li>Documentação de objetivo, fontes, linhagem, modelo, catálogo e discussão dos resultados.</li>
-          <li>Capturas reais da consulta salva no Databricks, organizadas por tema.</li>
-          <li>Dados brutos, manifestos locais e credenciais protegidos fora do histórico do Git.</li>
-        </ul>
-        <div class="delivery-callout"><strong>Antes da submissão:</strong> o enunciado exige a publicação de todo o código em um repositório público do GitHub e o compartilhamento do link no fórum da disciplina.</div>
-        <ul class="references">
-          <li><strong>Documentação:</strong> <a href="../README.md">README do projeto</a>, <a href="../docs/evidencias.md">evidências</a> e <a href="../docs/discussao_resultados.md">discussão dos resultados</a>.</li>
-          <li><strong>Fonte de dados:</strong> <a href="https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos">Dados abertos da ANP</a>.</li>
-        </ul>
+      <footer class="footer"><span>Limites tratados como parte do resultado</span><span>11</span></footer>
+    </section>
+
+    <section class="slide">
+      <header><p class="eyebrow">Entrega</p><h2>Reprodutibilidade e evidências do lote</h2></header>
+      <div class="grid-2">
+        <div>
+          <ul class="list">
+            <li><strong>Databricks:</strong> Volume organizado, lote Bronze identificado, 42 tabelas Delta e consulta SQL executada.</li>
+            <li><strong>Evidências:</strong> doze capturas organizadas por etapa, todas vinculadas ao lote nacional.</li>
+            <li><strong>Repositório:</strong> código, configurações, documentação, apresentação e capturas ficam separados dos dados brutos e de credenciais.</li>
+            <li><strong>Entrega:</strong> a publicação remota deve enviar exatamente esta versão, sem dados brutos.</li>
+          </ul>
+        </div>
+        <div class="callout"><strong>Fechamento.</strong><br>O projeto não busca apenas um ranking. Ele deixa uma trilha verificável da coleta à análise, preservando limitações de cobertura, granularidade e escopo em vez de escondê-las.</div>
       </div>
-      <div class="slide-footer">
-        <span class="footer-topic">Fabiola Dias Carvalho</span>
-        <span class="slide-number">18</span>
-      </div>
-      <aside class="notes">
-        <h3>Notas para apresentar</h3>
-        <p>O repositório deve mostrar o código e a documentação, sem carregar os arquivos brutos. Para a entrega oficial, a última conferência é publicar o repositório como público, testar os links e anexar o endereço no fórum.</p>
-      </aside>
+      <footer class="footer"><span>Fabiola Dias Carvalho · Projeto PUC</span><span>12</span></footer>
     </section>
   </main>
 
-  <nav class="controls" aria-label="Controles da apresentação">
-    <button type="button" id="previous" aria-label="Slide anterior">←</button>
-    <span class="slide-count" id="slide-count" aria-live="polite">1 / 18</span>
-    <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+  <nav class="controls" aria-label="Navegação da apresentação">
+    <button type="button" id="prev" aria-label="Slide anterior">←</button>
+    <button type="button" id="toggle" aria-label="Modo apresentação">Apresentar</button>
     <button type="button" id="next" aria-label="Próximo slide">→</button>
-    <button type="button" id="notes-toggle" aria-pressed="false" title="Mostrar notas">Notas</button>
-    <button type="button" id="overview-toggle" aria-pressed="false" title="Mostrar todos os slides">Visão</button>
-    <button type="button" id="help-toggle" title="Atalhos do teclado">?</button>
   </nav>
 
-  <dialog id="image-dialog" aria-labelledby="dialog-caption">
-    <form method="dialog"><button class="dialog-close" aria-label="Fechar imagem">×</button></form>
-    <img id="dialog-image" src="" alt="">
-    <p id="dialog-caption"></p>
-  </dialog>
-
-  <dialog id="help-dialog" aria-labelledby="help-heading">
-    <form method="dialog"><button class="dialog-close" aria-label="Fechar ajuda">×</button></form>
-    <h2 id="help-heading" style="color:#fffdf8; margin:0 0 16px">Atalhos da apresentação</h2>
-    <table style="color:#d9e5e7">
-      <tbody>
-        <tr><th style="color:#fffdf8">Setas, espaço ou Page Up/Page Down</th><td>navegar entre slides</td></tr>
-        <tr><th style="color:#fffdf8">Home ou End</th><td>ir ao primeiro ou último slide</td></tr>
-        <tr><th style="color:#fffdf8">N</th><td>mostrar ou ocultar notas</td></tr>
-        <tr><th style="color:#fffdf8">O</th><td>mostrar visão geral</td></tr>
-        <tr><th style="color:#fffdf8">F</th><td>tela cheia</td></tr>
-        <tr><th style="color:#fffdf8">Esc</th><td>fechar janela ou sair da tela cheia</td></tr>
-      </tbody>
-    </table>
-  </dialog>
-
   <script>
-    (function () {
-      var body = document.body;
-      var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
-      var previous = document.getElementById('previous');
-      var next = document.getElementById('next');
-      var count = document.getElementById('slide-count');
-      var progress = document.getElementById('progress-bar');
-      var notesToggle = document.getElementById('notes-toggle');
-      var overviewToggle = document.getElementById('overview-toggle');
-      var helpToggle = document.getElementById('help-toggle');
-      var imageDialog = document.getElementById('image-dialog');
-      var dialogImage = document.getElementById('dialog-image');
-      var dialogCaption = document.getElementById('dialog-caption');
-      var helpDialog = document.getElementById('help-dialog');
-      var current = 0;
-      var returnFocus = null;
-
-      function indexFromHash() {
-        var id = window.location.hash.replace('#', '');
-        var index = slides.findIndex(function (slide) { return slide.id === id; });
-        return index >= 0 ? index : 0;
-      }
-
-      function showSlide(index, updateHash) {
-        current = Math.max(0, Math.min(index, slides.length - 1));
-        slides.forEach(function (slide, slideIndex) {
-          slide.classList.toggle('active', slideIndex === current);
-          slide.setAttribute('aria-hidden', slideIndex === current ? 'false' : 'true');
-        });
-        count.textContent = (current + 1) + ' / ' + slides.length;
-        progress.style.width = ((current + 1) / slides.length * 100) + '%';
-        document.title = slides[current].dataset.title + ' | MVP ANP RJ';
-        if (updateHash !== false && window.location.hash !== '#' + slides[current].id) {
-          history.replaceState(null, '', '#' + slides[current].id);
-        }
-      }
-
-      function isInteractive(target) {
-        return target.closest('a, button, input, textarea, select, summary, dialog');
-      }
-
-      function nextSlide() {
-        showSlide(current + 1);
-      }
-
-      function previousSlide() {
-        showSlide(current - 1);
-      }
-
-      function toggleNotes() {
-        var enabled = body.classList.toggle('show-notes');
-        notesToggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-      }
-
-      function toggleOverview() {
-        var enabled = body.classList.toggle('overview');
-        overviewToggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-      }
-
-      function toggleFullscreen() {
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-        } else if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen();
-        }
-      }
-
-      function openImage(button) {
-        returnFocus = button;
-        dialogImage.src = button.dataset.image;
-        dialogImage.alt = button.querySelector('img').alt;
-        dialogCaption.textContent = button.dataset.caption;
-        imageDialog.showModal();
-      }
-
-      body.classList.add('js');
-      showSlide(indexFromHash(), false);
-
-      previous.addEventListener('click', previousSlide);
-      next.addEventListener('click', nextSlide);
-      notesToggle.addEventListener('click', toggleNotes);
-      overviewToggle.addEventListener('click', toggleOverview);
-      helpToggle.addEventListener('click', function () { helpDialog.showModal(); });
-
-      document.querySelectorAll('.evidence-trigger').forEach(function (button) {
-        button.addEventListener('click', function () { openImage(button); });
+    (() => {
+      const slides = [...document.querySelectorAll('.slide')];
+      const toggle = document.querySelector('#toggle');
+      let index = 0;
+      const show = value => {
+        index = (value + slides.length) % slides.length;
+        slides.forEach((slide, position) => slide.classList.toggle('active', position === index));
+      };
+      const present = () => {
+        document.body.classList.toggle('present');
+        toggle.textContent = document.body.classList.contains('present') ? 'Visão geral' : 'Apresentar';
+        show(index);
+      };
+      document.querySelector('#prev').addEventListener('click', () => show(index - 1));
+      document.querySelector('#next').addEventListener('click', () => show(index + 1));
+      toggle.addEventListener('click', present);
+      window.addEventListener('keydown', event => {
+        if (event.key === 'ArrowRight' || event.key === 'PageDown') show(index + 1);
+        if (event.key === 'ArrowLeft' || event.key === 'PageUp') show(index - 1);
+        if (event.key === 'Escape' && document.body.classList.contains('present')) present();
       });
-
-      imageDialog.addEventListener('close', function () {
-        if (returnFocus) { returnFocus.focus(); }
-      });
-
-      window.addEventListener('hashchange', function () {
-        showSlide(indexFromHash(), false);
-      });
-
-      window.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && document.fullscreenElement) {
-          document.exitFullscreen();
-          return;
-        }
-        if (imageDialog.open || helpDialog.open || isInteractive(event.target)) {
-          return;
-        }
-        if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {
-          event.preventDefault();
-          nextSlide();
-        } else if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
-          event.preventDefault();
-          previousSlide();
-        } else if (event.key === 'Home') {
-          event.preventDefault();
-          showSlide(0);
-        } else if (event.key === 'End') {
-          event.preventDefault();
-          showSlide(slides.length - 1);
-        } else if (event.key.toLowerCase() === 'n') {
-          toggleNotes();
-        } else if (event.key.toLowerCase() === 'o') {
-          toggleOverview();
-        } else if (event.key.toLowerCase() === 'f') {
-          toggleFullscreen();
-        } else if (event.key === '?') {
-          helpDialog.showModal();
-        }
-      });
-    }());
+      show(0);
+    })();
   </script>
 </body>
 </html>
