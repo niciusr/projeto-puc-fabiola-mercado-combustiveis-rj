@@ -1,17 +1,23 @@
-# Capturas da execução no Databricks
+# Capturas do Databricks
 
-As imagens desta pasta registram resultados da consulta salva `04 - Análises
-Gerenciais ANP RJ`, executada após as etapas Bronze, Silver, Gold e qualidade.
+As imagens numeradas de `01_` a `16_` foram geradas ou refeitas na execução nacional do lote `anp_br_20260909T081743Z_9b2d128e`, no schema `workspace.anp_combustiveis_br_2022_2024`.
 
-| Arquivo | Resultado mostrado |
+| Arquivo da execução nacional | Evidência |
 |---|---|
-| `01_reconciliacao_etapas.png` | Contagem de linhas nas principais etapas, incluindo Bronze, Silver, Gold e integração de mercado. |
-| `02_regras_qualidade.png` | Regras executadas, tabelas avaliadas, quantidade de ocorrências e percentual afetado. |
-| `02b_status_qualidade.png` | Situação final de cada regra: `APROVADA` ou `ATENCAO`. |
-| `03_cobertura_pesquisa.png` | Base da cobertura por ano e produto. |
-| `03b_cobertura_percentual.png` | Percentual de municípios com pesquisa de preço no universo de vendas. |
-| `04_ranking_etanol_2022.png` | Ranking municipal de preço mediano de etanol hidratado em 2022. |
+| `01_volume_arquivos.png` | organização do Volume |
+| `02_bronze_lote.png` | lote Bronze, fontes e contagens carregadas |
+| `04_reconciliacao_etapas.png` | reconciliação das etapas de transformação |
+| `03_tabelas_gold.png` | 42 tabelas publicadas no schema |
+| `05_catalogo_atributos.png` e `06_qualidade.png` | perfil por atributo e regras de qualidade |
+| `07_ranking_vendedores.png` a `16_extremos_preco_dispersao_cobertura.png` | respostas analíticas das consultas SQL, com filtros visíveis |
 
-As duas imagens de qualidade e as duas de cobertura são pares da mesma consulta,
-obtidos com a tabela deslocada horizontalmente para que todos os campos ficassem
-legíveis.
+Os arquivos históricos abaixo pertencem ao protótipo inicial, restrito ao Rio de Janeiro. Foram preservados como histórico e **não são evidência da versão nacional**.
+
+| Arquivo histórico | Escopo a que pertence |
+|---|---|
+| `01_reconciliacao_etapas.png` | protótipo RJ de preço e venda municipal |
+| `02_regras_qualidade.png` e `02b_status_qualidade.png` | protótipo RJ de qualidade |
+| `03_cobertura_pesquisa.png` e `03b_cobertura_percentual.png` | protótipo RJ de cobertura municipal |
+| `04_ranking_etanol_2022.png` | protótipo RJ de ranking de preço |
+
+Consulte [evidencias.md](../evidencias.md) para o vínculo entre cada imagem, a tabela de origem e a conclusão apresentada. As capturas de análise foram feitas por consultas filtradas para que UF, período, produto e colunas de resultado apareçam na própria tela. O nome físico do Volume foi preservado do ambiente original; não representa o recorte da análise nacional.
