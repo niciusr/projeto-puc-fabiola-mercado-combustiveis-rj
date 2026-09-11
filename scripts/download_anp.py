@@ -33,6 +33,9 @@ class Source:
     relative_path: str
     kind: str
     description: str
+    extract_relative_path: str | None = None
+    member_contains: tuple[str, ...] = ()
+    output_filename: str | None = None
 
 
 SOURCES: dict[str, Source] = {
@@ -112,6 +115,17 @@ SOURCES: dict[str, Source] = {
         "csv",
         "Cadastro atual de revendedores varejistas de combustíveis automotivos.",
     ),
+    "logistica_mercado": Source(
+        "logistica_mercado",
+        "https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/"
+        "arquivos/mdpg/movimentacaologistica.zip",
+        "logistica/movimentacaologistica.zip",
+        "zip",
+        "Logística 02: vendas no mercado brasileiro de combustíveis por vendedor e UF.",
+        "logistica/extraidos",
+        ("LOGISTICA 02", "VENDAS NO MERCADO"),
+        "vendas_mercado_brasileiro.csv",
+    ),
 }
 
 
@@ -137,15 +151,38 @@ def request_for(url: str, timeout: int):
     return urlopen(Request(url, headers=headers), timeout=timeout)
 
 
-def extract_csvs(archive: Path, target_dir: Path, force: bool) -> list[str]:
+def extract_csvs(
+    archive: Path,
+    target_dir: Path,
+    force: bool,
+    member_contains: tuple[str, ...] = (),
+    output_filename: str | None = None,
+) -> list[str]:
     target_dir.mkdir(parents=True, exist_ok=True)
     extracted: list[str] = []
     try:
         with ZipFile(archive) as zip_file:
-            for member in zip_file.infolist():
-                if member.is_dir() or not member.filename.lower().endswith(".csv"):
-                    continue
-                destination = target_dir / Path(member.filename).name
+            members = [
+                member
+                for member in zip_file.infolist()
+                if not member.is_dir() and member.filename.lower().endswith(".csv")
+            ]
+            if member_contains:
+                tokens = tuple(token.casefold() for token in member_contains)
+                members = [
+                    member
+                    for member in members
+                    if all(token in member.filename.casefold() for token in tokens)
+                ]
+            if not members:
+                criteria = ", ".join(member_contains) if member_contains else "CSV"
+                raise RuntimeError(f"Não encontrei o arquivo esperado ({criteria}) em {archive}.")
+            if output_filename and len(members) != 1:
+                raise RuntimeError(f"A seleção de {archive} retornou {len(members)} CSVs; era esperado apenas um.")
+
+            for member in members:
+                filename = output_filename or Path(member.filename).name
+                destination = target_dir / filename
                 if destination.exists() and not force:
                     extracted.append(str(destination.relative_to(PROJECT_ROOT)))
                     continue
@@ -183,7 +220,14 @@ def download(source: Source, timeout: int, force: bool, extract: bool) -> dict[s
 
     extracted: list[str] = []
     if source.kind == "zip" and extract:
-        extracted = extract_csvs(target, RAW_ROOT / "precos" / "extraidos" / source.name, force)
+        relative_directory = source.extract_relative_path or f"{Path(source.relative_path).parent}/extraidos/{source.name}"
+        extracted = extract_csvs(
+            target,
+            RAW_ROOT / relative_directory,
+            force,
+            source.member_contains,
+            source.output_filename,
+        )
 
     return {
         "source": source.name,
