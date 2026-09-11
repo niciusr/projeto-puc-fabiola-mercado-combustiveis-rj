@@ -1,62 +1,59 @@
 # Evidências para a entrega
 
-As imagens e vídeos devem mostrar a execução real no ambiente em nuvem. A lista abaixo serve como checklist; não substitui as evidências.
+As evidências abaixo foram geradas ou refeitas no Databricks para a versão nacional. As capturas usam o schema `workspace.anp_combustiveis_br_2022_2024` e o lote `anp_br_20260909T081743Z_9b2d128e`. As consultas filtradas que produziram as telas estão em `notebooks/05_capturas_evidencias.sql`.
 
-## Registro da execução realizada
+## Evidências obrigatórias
 
-| Campo | Valor observado |
+| Ordem | Evidência registrada | Origem | Arquivo |
+|---:|---|---|---|
+| 1 | Volume com as pastas `raw`, `config` e `metadata` | Data Explorer | [01_volume_arquivos.png](capturas_databricks/01_volume_arquivos.png) |
+| 2 | Lote Bronze, fontes e contagens carregadas | `bronze_lote_carga` | [02_bronze_lote.png](capturas_databricks/02_bronze_lote.png) |
+| 3 | 42 tabelas Bronze, Silver e Gold no schema nacional | Data Explorer e consulta de inventário | [03_tabelas_gold.png](capturas_databricks/03_tabelas_gold.png) |
+| 4 | Reconciliação das etapas e lote de execução | `gold_reconciliacao_etapas` | [04_reconciliacao_etapas.png](capturas_databricks/04_reconciliacao_etapas.png) |
+| 5 | Perfil observado de atributos de uma tabela Silver | `gold_catalogo_atributos` | [05_catalogo_atributos.png](capturas_databricks/05_catalogo_atributos.png) |
+| 6 | Regras de qualidade e seus status | `gold_resultado_regra_qualidade` | [06_qualidade.png](capturas_databricks/06_qualidade.png) |
+| 7 | Ranking anual de apoio, DF e etanol em 2023 | consulta 2A | [07_ranking_vendedores.png](capturas_databricks/07_ranking_vendedores.png) |
+| 8 | HHI, Top 3 e participação do líder anual, AP e MG | consulta 4 | [08_concentracao_uf.png](capturas_databricks/08_concentracao_uf.png) |
+| 9 | Relação descritiva entre preço, volume e concentração | consulta 7 | [09_preco_volume.png](capturas_databricks/09_preco_volume.png) |
+| 10 | Reconciliação anual de volumes, MG e MT | consulta 8 | [10_reconciliacao_volume.png](capturas_databricks/10_reconciliacao_volume.png) |
+| 11 | Cobertura de preços nos municípios com venda | consulta 9 | [11_cobertura_municipal.png](capturas_databricks/11_cobertura_municipal.png) |
+| 12 | Fotografia atual da rede de bandeiras no AM | consulta 11 | [12_rede_bandeiras.png](capturas_databricks/12_rede_bandeiras.png) |
+| 13 | Participação anual de Vibra, Ipiranga, Raízen e ALE no DF | consulta 3 | [13_grupos_vendedores.png](capturas_databricks/13_grupos_vendedores.png) |
+| 14 | Mediana, dispersão, meses, coletas e postos do etanol por UF em 2024 | consulta 5 | [14_preco_uf.png](capturas_databricks/14_preco_uf.png) |
+| 15 | Ranking mensal, DF e etanol em dezembro de 2023 | consulta 2 | [15_ranking_mensal.png](capturas_databricks/15_ranking_mensal.png) |
+| 16 | Extremos de preço, dispersão e coletas no etanol em 2024 | consulta 5A | [16_extremos_preco_dispersao_cobertura.png](capturas_databricks/16_extremos_preco_dispersao_cobertura.png) |
+
+## Registro do lote
+
+Os valores abaixo foram extraídos do ambiente após a execução:
+
+| Campo | Valor |
 |---|---|
-| Lote Bronze | `anp_rj_20260906T022801Z_5a797990` |
-| Preços carregados na Bronze | 2.710.038 linhas |
-| Preços válidos no recorte RJ 2022–2024 | 212.637 linhas |
-| Preços usados nas agregações Gold | 212.631 linhas |
-| Combinações município-produto-ano com venda | 552 |
-| Combinações integradas de preço e venda | 194 |
-| Regras de qualidade | 10 aprovadas e 4 em atenção |
-| Consulta salva | `04 - Análises Gerenciais ANP RJ` |
+| Schema | `workspace.anp_combustiveis_br_2022_2024` |
+| Lote Bronze | `anp_br_20260909T081743Z_9b2d128e` |
+| Data da carga | `2026-09-09T18:54:22Z` |
+| Período observado da Logística 02 | janeiro de 2022 a dezembro de 2024 |
+| Linhas na Bronze | 225.398 na Logística 02 e 2.710.038 na série de preços; as etapas consolidadas estão na captura 04 |
+| Regras aprovadas, em atenção e informativas | 19 aprovadas, 0 em atenção e 7 informativas |
+| Consultas SQL utilizadas | `notebooks/04_analises.sql` e `notebooks/05_capturas_evidencias.sql` |
 
-## Capturas incluídas no repositório
+O nome físico do Volume, `anp_rj_2022_2024`, foi mantido do ambiente de trabalho original. O escopo efetivo é definido pelo schema, pelo lote, pelos filtros e pelas tabelas nacionais acima; o nome do Volume não é uma dimensão analítica.
 
-As imagens abaixo foram registradas durante a execução no Databricks. Elas são
-complementares: em telas largas, algumas colunas aparecem em uma segunda imagem
-para manter os números legíveis.
+## Leitura curta da execução
 
-| Evidência | Arquivos |
-|---|---|
-| Reconciliação das etapas do pipeline | [01_reconciliacao_etapas.png](capturas_databricks/01_reconciliacao_etapas.png) |
-| Regras de qualidade e respectivos status | [02_regras_qualidade.png](capturas_databricks/02_regras_qualidade.png) e [02b_status_qualidade.png](capturas_databricks/02b_status_qualidade.png) |
-| Cobertura da pesquisa por ano e produto | [03_cobertura_pesquisa.png](capturas_databricks/03_cobertura_pesquisa.png) e [03b_cobertura_percentual.png](capturas_databricks/03b_cobertura_percentual.png) |
-| Ranking de preços de etanol em 2022 | [04_ranking_etanol_2022.png](capturas_databricks/04_ranking_etanol_2022.png) |
+- Foram publicadas 42 tabelas no schema nacional e 464 registros no catálogo observado de atributos.
+- O mart estadual tem 1.944 combinações de UF, mês e produto; o mart municipal anual tem 30.117 combinações.
+- As sete regras informativas preservam limitações ou eventos que precisam aparecer na análise, como 941 linhas sem UF de destino válida, 337 ajustes negativos, cobertura parcial da pesquisa de preços e 43.790 outliers sinalizados por IQR. Nenhum desses casos foi apagado da camada de origem.
 
-Veja também o [índice das capturas](capturas_databricks/README.md), com a
-descrição de cada resultado exibido.
+## Check de qualidade das imagens
 
-## Checklist complementar
+- Não mostrar e-mail, token, URL com credencial ou dados pessoais fora do escopo.
+- Deixar visíveis o nome da tabela, o filtro e as colunas que sustentam a conclusão.
+- Em uma análise de vendedor, deixar visíveis UF, produto, período e unidade de medida.
+- Em uma análise de preço, deixar visível a cobertura ou quantidade de postos e coletas.
+- Em uma reconciliação, deixar visíveis os dois volumes, o percentual de diferença e o status.
+- Nomear as imagens com a ordem acima e registrar no README ou apresentação de onde vieram.
 
-| Item | Evidência a guardar | Onde obter |
-|---|---|---|
-| Coleta | `download_manifest.json` com URL, SHA-256 e data | `data/metadata/` |
-| Inspeção | `source_manifest.json` com colunas, codificação e contagem de linhas | `data/metadata/` |
-| Bronze | execução concluída e contagem por tabela/lote | notebook 01 e `bronze_lote_carga` |
-| Silver | amostra de preço e venda com tipos, CNPJ normalizado e código IBGE | notebook 02 |
-| Modelo | tabelas `gold_dim_*` e `gold_fato_*` visíveis no catálogo | interface do Databricks |
-| Linhagem | diagrama de `docs/fontes_e_linhagem.md` e metadados do lote | documentação e tabela de lote |
-| Qualidade | `gold_resultado_regra_qualidade` e `gold_catalogo_atributos` | notebook 03 |
-| Cobertura | resultado de `gold_cobertura_pesquisa` | consulta 2 do SQL |
-| Análise | ranking, correlação, quadrantes e bandeiras | consultas 3 a 6 do SQL |
-| Limitações | município sem preço, baixa cobertura e snapshot atual | discussão final |
+## Evidências de coleta
 
-## Sequência sugerida de capturas adicionais
-
-1. Página do Volume com as pastas `raw` e `config`.
-2. Resultado do notebook 01 com o identificador do lote e as contagens.
-3. Listagem das tabelas Delta criadas.
-4. Resultado da reconciliação de etapas.
-5. Perfil de atributos de uma tabela Silver e de uma Gold.
-6. Tabela de regras de qualidade, incluindo pelo menos uma regra em atenção se ela existir.
-7. Cobertura da pesquisa por ano e produto.
-8. Um ranking de preço com postos e semanas, não apenas o valor de preço.
-9. Um quadrante de preço relativo e volume, com o filtro `publicar_analise` visível.
-10. Texto final com fontes, método, limitações e conclusões baseadas nas consultas.
-
-Nomeie os arquivos de forma simples, por exemplo `01_bronze_lote.png`, `02_modelo_delta.png`, `03_qualidade.png` e `04_ranking_gasolina_2024.png`.
+Os manifestos locais `data/metadata/download_manifest.json` e `data/metadata/source_manifest.json` não entram no Git porque acompanham os arquivos brutos. O resumo versionado de URL, data de acesso e SHA-256 está em [registro_coleta.md](registro_coleta.md), junto com os termos de uso consultados.

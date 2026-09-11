@@ -1,70 +1,54 @@
 # Catálogo de dados
 
-O catálogo tem duas partes: este dicionário de negócio e a tabela `gold_catalogo_atributos`, produzida pelo notebook de qualidade. A tabela gerada registra, para **cada coluna** das tabelas Silver e Gold, tipo Spark, total de registros, nulos, distintos, mínimo, máximo e categorias mais frequentes na execução efetiva. As duas tabelas produzidas pelo próprio notebook de qualidade também são perfiladas no fim da execução; apenas o catálogo não perfila a si mesmo.
+O catálogo final é produzido pelo notebook `03_qualidade_dados.py` na tabela `gold_catalogo_atributos`. Para cada atributo de todas as tabelas Silver e Gold, ele registra tipo Spark, quantidade de linhas, nulos, distintos, mínimo, máximo e, para campos categóricos, as categorias mais frequentes observadas no lote executado.
 
-Assim, valores mínimos, máximos e categorias não são preenchidos antecipadamente ou inventados antes da carga. Eles passam a fazer parte do resultado reproduzível do pipeline.
+As descrições de negócio, domínios esperados, unidades e linhagem ficam em `config/catalogo_atributos.csv`. Nesta revisão, o arquivo versionado recebeu entradas completas de `gold_dim_lote_carga`, `gold_fato_cadastro_revenda_snapshot`, `gold_ref_conciliacao_municipio` e `gold_reconciliacao_etapas`, que sustentam a rastreabilidade da entrega. Elas passam a compor `gold_catalogo_atributos` na próxima execução do notebook 03; o lote registrado em 9 de setembro mantém o perfil observado naquela execução. Quando uma coluna técnica não tem entrada manual, o notebook completa uma descrição e domínio compatíveis com seu tipo. Mínimos, máximos e categorias vêm sempre da execução real, não de valores preenchidos no dicionário.
 
-## Fonte: pesquisa de preços
+## Dicionário das fontes
 
-| Campo original | Descrição | Tratamento |
+| Fonte | Campos principais | Tratamento na Silver |
 |---|---|---|
-| `Regiao - Sigla`, `Estado - Sigla` | localização administrativa | filtro para `RJ`; região preservada |
-| `Municipio` | município da coleta | normalização e conciliação com código IBGE |
-| `Revenda`, `CNPJ da Revenda` | identificação do posto | CNPJ sem formatação e flag de 14 dígitos |
-| endereço, bairro e CEP | localização descritiva | preservados na camada detalhada |
-| `Produto` | combustível pesquisado | mapeado por tabela de referência |
-| `Data da Coleta` | data da observação | conversão de `dd/MM/yyyy` para data |
-| `Valor de Venda` | preço de revenda | conversão de vírgula decimal; domínio positivo |
-| `Valor de Compra` | preço de compra | preservado no Bronze, fora da análise principal |
-| `Unidade de Medida`, `Bandeira` | contexto comercial | preservados e normalizados |
+| Logística 02 | `Período`, `UF Destino`, `Produto`, `Vendedor`, `Qtd Produto Líquido` | período vira `data_referencia`; quantidade vira decimal; vendedor recebe chave normalizada; UF, volume, produto e duplicidade recebem flags |
+| Preços semanais | UF, município, revenda, CNPJ, produto, data, valor de venda, unidade e bandeira | datas e decimais tipados; município conciliado ao IBGE; produto mapeado; chave natural marcada |
+| Vendas municipais | ano, grande região, UF, produto, código IBGE, município e vendas | código IBGE vira chave geográfica; volume é decimal; produto é mapeado |
+| Cadastro de revendedores | CNPJ, razão social, UF, município, bandeira e datas cadastrais | retrato de extração separado do histórico de preços e volumes |
 
-## Fonte: vendas municipais
+## Domínios que orientam a qualidade
 
-| Campo original | Descrição | Tratamento |
+| Atributo | Domínio esperado | Tratamento se houver exceção |
 |---|---|---|
-| `ANO` | ano de referência | filtro 2022–2024 |
-| `GRANDE REGIÃO`, `UF` | localização administrativa | filtro `RJ`; região preservada |
-| `PRODUTO` | combustível vendido | mapeado por tabela de referência |
-| `CÓDIGO IBGE`, `MUNICÍPIO` | identificação municipal | código IBGE torna-se chave canônica |
-| `VENDAS` | volume anual | decimal em litros; domínio não negativo |
+| `data_referencia` | mês entre 2022-01-01 e 2024-12-01 | linha preservada na Silver e sinalizada em regra de qualidade |
+| `uf` na logística | uma das 27 siglas de UF | valores como `N/A` ficam na Silver, mas não entram em agregados estaduais |
+| `volume_liquido_litros` | número; negativos podem ser ajustes declarados | flag `ajuste_negativo`; nunca apagado para melhorar o resultado |
+| `volume_litros` municipal | número maior ou igual a zero | linha sinalizada quando inválida |
+| `preco_venda` | decimal maior que zero | linha fica auditável; só preço válido entra nas agregações |
+| `codigo_ibge` | sete dígitos quando conciliado | ausência gera flag, não substituição por nome livre |
+| `cnpj` | 14 dígitos quando válido | a formatação é removida e a validade é registrada |
+| `produto_analitico` | valor presente no mapeamento ou `NAO_MAPEADO` | o valor de origem é preservado e a cobertura do mapeamento é mensurada |
+| `participacao_pct` | 0 a 100 | calculada somente com saldo positivo de vendedor e total positivo de UF |
+| `hhi` | 0 a 10.000 | deriva das participações por vendedor |
 
-## Fonte: cadastro atual de revendedores
+## Tabelas principais
 
-| Campo original | Uso |
-|---|---|
-| `CODIGOISIMP`, `AUTORIZACAO`, `DATAPUBLICACAO` | rastreabilidade cadastral |
-| `RAZAOSOCIAL`, `CNPJ` | identificação da fotografia atual |
-| endereço, complemento, bairro, CEP, UF e município | localização atual |
-| `BANDEIRA`, `DATAVINCULACAO` | vínculo comercial atual |
-
-## Tabelas analíticas e domínios
-
-Os campos de negócio têm definições, domínio esperado, unidade e linhagem em [config/catalogo_atributos.csv](../config/catalogo_atributos.csv). Para os campos técnicos de carga, o notebook gera uma definição e linhagem pela própria tabela, sem deixar colunas fora do perfil observado.
-
-| Tabela | Finalidade | Chave/granularidade |
+| Tabela | Finalidade | Granularidade |
 |---|---|---|
-| `silver_preco_coletado` | preço tipado e conciliado, com flags | observação de preço |
-| `silver_venda_municipio` | venda anual tipada e mapeada | código IBGE × produto × ano |
-| `gold_dim_tempo` | calendário das coletas | data |
-| `gold_dim_municipio` | referência geográfica | código IBGE |
-| `gold_dim_produto` | equivalência entre fontes | produto analítico |
-| `gold_ref_mapeamento_produto` | regras entre produto publicado e produto analítico | fonte × produto de origem |
-| `gold_dim_revenda` | revendas observadas no histórico | CNPJ |
-| `gold_ref_conciliacao_municipio` | auditoria de nomes de município e código IBGE | município de origem × UF |
-| `gold_fato_preco_coletado` | auditoria da observação | CNPJ × produto × data |
-| `gold_fato_preco_municipio_semana` | estatísticas semanais | município × produto × semana |
-| `gold_fato_preco_municipio_anual` | estatísticas anuais com cobertura | município × produto × ano |
-| `gold_fato_venda_municipio_anual` | venda anual municipal | município × produto × ano |
-| `gold_fato_mercado_municipio_anual` | mart de preço e volume | município × produto × ano |
-| `gold_fato_cadastro_revenda_snapshot` | cadastro atual isolado | CNPJ × data de extração |
+| `silver_venda_empresa_uf_mes` | venda logística padronizada com flags | linha recebida da Logística 02 |
+| `silver_preco_coletado` | preço de revenda padronizado | posto × produto × data |
+| `silver_venda_municipio` | venda anual municipal padronizada | município × produto × ano |
+| `silver_cadastro_revenda` | fotografia cadastral padronizada | CNPJ × data de extração |
+| `gold_fato_venda_empresa_uf_mes` | volume líquido por vendedor | vendedor × UF × produto × mês |
+| `gold_fato_participacao_vendedor_uf_mes` | participação e ranking | vendedor × UF × produto × mês |
+| `gold_fato_concentracao_uf_mes` | HHI, líder e Top 3 | UF × produto × mês |
+| `gold_fato_preco_uf_mes` | preço e dispersão por UF | UF × produto × mês |
+| `gold_mart_mercado_uf_mes` | contexto integrado de volume, concentração e preço | UF × produto × mês |
+| `gold_fato_mercado_municipio_anual` | comparação municipal de preço e volume | município × produto × ano |
+| `gold_reconciliacao_volume_uf_ano` | comparação das duas fontes de volume | UF × grupo de produto × ano |
+| `gold_catalogo_atributos` | perfil por atributo e dicionário aplicado | tabela × coluna |
+| `gold_resultado_regra_qualidade` | resultado das regras de qualidade | regra × tabela |
 
-## Convenções de domínio
+## Como usar o catálogo na entrega
 
-- Datas de preço devem estar entre 2022-01-01 e 2024-12-31.
-- `UF` deve ser `RJ` após o filtro do projeto.
-- Preço válido é decimal maior que zero. Volume válido é decimal maior ou igual a zero.
-- `codigo_ibge` deve ter sete dígitos quando presente.
-- CNPJ válido em formato tem 14 dígitos; a validação de dígitos verificadores pode ser adicionada como regra complementar, sem descartar registros brutos.
-- `produto_analitico` e `compatibilidade_analitica` são controlados por `produto_mapeamento.csv`.
-- Métricas de preço são publicadas apenas quando a cobertura mínima está atendida; dados de baixa cobertura continuam disponíveis para auditoria.
-- A flag de outlier por IQR só é avaliada em grupos com pelo menos quatro observações; em grupos menores ela permanece falsa e `outlier_iqr_avaliavel` informa a limitação.
+1. Execute o notebook de qualidade com `perfil_completo = true`.
+2. Registre a contagem, os nulos, o mínimo, o máximo e as categorias observadas para os campos usados na apresentação.
+3. Mostre pelo menos uma captura de `gold_catalogo_atributos` e uma de `gold_resultado_regra_qualidade`.
+4. Ao discutir uma ressalva, cite a regra, a tabela e a quantidade afetada. Não substitua a ressalva por uma limpeza silenciosa.

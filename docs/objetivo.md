@@ -1,47 +1,70 @@
 # Objetivo e questões do projeto
 
+Este documento orienta o recorte, o modelo e as consultas da entrega. Ele foi mantido como referência durante a ampliação do projeto para o recorte nacional, sem apagar as perguntas que justificam as análises.
+
 ## Objetivo geral
 
-Construir um pipeline de dados em nuvem para integrar preços de revenda pesquisados pela ANP, vendas anuais municipais e um cadastro atual de revendedores. A análise descreve diferenças de preço e de dispersão no mercado de combustíveis do Rio de Janeiro entre 2022 e 2024.
+Construir um pipeline em nuvem que integre dados públicos da ANP para descrever, entre 2022 e 2024, o volume de gasolina C e etanol hidratado declarado por vendedor em cada UF brasileira, a concentração associada a esse volume e o contexto de preços de revenda e de vendas municipais.
 
-## Unidade de análise
+O resultado deve ser reprodutível, rastreável desde o arquivo bruto até a tabela analítica e acompanhado de evidências de qualidade por atributo.
 
-| Camada | Unidade de análise |
-|---|---|
-| Preço bruto | posto × produto × data de coleta |
-| Preço agregado | município × produto × semana e município × produto × ano |
-| Vendas | município × produto × ano |
-| Mercado integrado | município × produto × ano |
-| Cadastro atual | revendedor × data de extração |
+## Pergunta central
 
-## Perguntas
+Como evoluiu o volume de gasolina C e etanol hidratado declarado por vendedor nas Unidades da Federação entre 2022 e 2024, qual é a estrutura de concentração observada nesses mercados e como ela se relaciona, de forma descritiva, com preços de revenda e escala municipal de vendas?
 
-1. Quais municípios têm preços medianos mais altos e mais baixos para gasolina C e etanol hidratado?
-2. Onde há maior dispersão de preço entre postos e ao longo das semanas pesquisadas?
-3. Como o volume anual vendido se associa descritivamente ao preço mediano e à dispersão?
-4. Que municípios combinam volume alto com preço relativo alto, ou volume baixo com preço relativo baixo?
-5. Dentro de um mesmo município, semana e produto, como a bandeira se posiciona em relação à mediana local?
-6. Qual é a cobertura da pesquisa de preços diante do universo de municípios com vendas registradas?
+## Perguntas de análise
 
-## Recorte
+1. Quais vendedores concentram os maiores volumes declarados em cada UF, mês e produto?
+2. Como evoluem a participação do vendedor líder, a participação dos três maiores e o índice HHI por UF, mês e produto?
+3. Como se comportam, em termos de volume declarado, os vendedores identificados como Vibra, Ipiranga, Raízen e ALE nos estados onde aparecem?
+4. Quais UFs apresentam preços medianos de revenda mais altos, maior dispersão e maior ou menor cobertura de coleta para os produtos analisados?
+5. Como concentração de vendedores, preço de revenda e escala do volume variam conjuntamente quando comparados na mesma UF, mês e produto?
+6. Em que medida os totais anuais da fonte logística e das vendas municipais são conciliáveis por UF e produto? Onde a diferença parece decorrer de escopo, cobertura ou definição de produto?
+7. O que o cadastro atual de revendedores e bandeiras pode acrescentar como contexto, sem ser usado para reconstituir a rede histórica?
 
-- Estado: Rio de Janeiro (`UF = RJ`);
-- anos: 2022, 2023 e 2024;
-- produtos do cruzamento: gasolina C e etanol hidratado;
-- regra de publicação: três ou mais postos distintos e quatro ou mais semanas pesquisadas por município-produto-ano.
+## Unidades de análise
 
-O recorte anual respeita a granularidade da venda municipal. A análise mensal é possível para a pesquisa de preços, mas não deve ser comparada diretamente com a venda municipal anual.
+| Tema | Unidade | Fonte principal | Medidas |
+|---|---|---|---|
+| Volume por vendedor | vendedor × UF × produto × mês | Logística 02 | volume líquido em litros |
+| Participação e concentração | vendedor/UF × produto × mês | Logística 02 | participação, ranking, Top 3 e HHI |
+| Preço de revenda | UF × produto × mês | série semanal de preços | mediana, média, percentis, dispersão e cobertura |
+| Escala municipal | município × produto × ano | vendas municipais | volume anual em litros |
+| Reconciliação de volume | UF × produto × ano | Logística 02 + vendas municipais | diferença absoluta e percentual |
+| Contexto de rede | UF × bandeira, fotografia de extração | cadastro de revendedores | quantidade de registros e bandeira declarada |
+
+## Recorte e definições
+
+- **Território:** Brasil, com análise por Unidade da Federação. Registros sem UF de destino válida são preservados para qualidade, mas não integram rankings estaduais.
+- **Período:** 2022 a 2024. A carga mede os meses efetivamente disponíveis e só publica comparações temporais com cobertura explícita.
+- **Produtos principais:** gasolina C comum e etanol hidratado comum. O mapeamento de produtos é versionado em `config/produto_mapeamento.csv`.
+- **Volume:** `Qtd Produto Líquido` publicado na Logística 02, mantido como volume líquido em litros. Ajustes negativos eventualmente presentes na origem são sinalizados; não são apagados sem justificativa.
+- **Vendedor:** razão social publicada na fonte logística. É um declarante do volume e não deve ser confundido automaticamente com uma distribuidora varejista, uma marca ou uma bandeira.
+- **Bandeira:** classificação da revenda varejista presente na pesquisa de preços e no cadastro. É tratada em dimensão separada.
+
+## Regras de comparação
+
+O cruzamento principal usa `UF + mês + produto_analitico` depois de cada fonte ser agregada na sua granularidade correta:
+
+1. a Logística 02 gera volume, participação e concentração por vendedor/UF/mês/produto;
+2. a pesquisa de preços é resumida para UF/mês/produto, preservando número de coletas, postos e semanas;
+3. as duas tabelas são associadas sem atribuir um preço de posto a um vendedor específico;
+4. as vendas municipais entram no nível anual para reconciliação e escala, não como denominador da participação mensal do vendedor.
+
+O indicador de participação é chamado de **participação no volume declarado por vendedor**. Essa formulação é deliberada: a base pode conter diferentes perfis de vendedores e não fornece uma chave que permita inferir participação de marca no varejo.
 
 ## Hipóteses de trabalho
 
-- Municípios com maior volume podem ter perfil de preço e dispersão diferente dos demais, mas o dado não permite atribuir causa.
-- Parte relevante da diferença observada pode estar associada à cobertura da pesquisa. Por isso, cobertura é métrica de resultado e não apenas etapa técnica.
-- A comparação entre bandeiras deve controlar município, semana e produto para não transformar diferenças de localização em diferença de bandeira.
+- Estados com maior escala de volume podem apresentar estruturas de concentração diferentes, mas a análise não atribui causalidade.
+- A concentração observada pode variar por produto e por UF; por isso, o ranking nacional isolado não é suficiente para responder às perguntas do projeto.
+- Preço de revenda é resultado de pesquisa amostral. A cobertura deve acompanhar qualquer comparação de preço entre UFs.
+- Diferenças entre o total logístico e o total municipal podem apontar divergência de escopo ou classificação; elas são medidas e discutidas, não ajustadas artificialmente.
 
 ## Limitações assumidas
 
-- A pesquisa de preços é amostral; ausência de observação não significa ausência de posto ou de venda.
-- Nem todo município presente nas vendas terá coleta de preços.
-- O cadastro de revendedores é uma fotografia obtida na data da extração, não uma reconstrução do cadastro histórico.
-- `Valor de Compra` não será usado para cálculo de margem: o campo não tem preenchimento adequado no período.
-- Gasolina aditivada, diesel, diesel S10 e GNV são mantidos na camada de preços, mas não entram no cruzamento principal por incompatibilidade conceitual ou de granularidade.
+- A fonte logística apresenta volume declarado por vendedor, não uma identificação de cada posto que recebeu ou vendeu o combustível.
+- Não existe chave pública direta entre `Vendedor` da Logística 02 e `Bandeira` ou CNPJ do posto da pesquisa de preços.
+- A pesquisa de preços é amostral; ausência de observação não significa ausência de mercado ou de posto.
+- As vendas municipais são anuais, enquanto o núcleo do projeto é mensal. Elas não são usadas para criar uma comparação mensal inexistente.
+- O cadastro de revendedores é uma fotografia da data de extração, e não uma série histórica de 2022 a 2024.
+- Correlação, ranking e concentração descrevem padrões dos dados disponíveis. Não demonstram causa e efeito.
