@@ -4,7 +4,7 @@ Esta pasta recebe os arquivos brutos baixados da ANP, o manifesto da coleta e re
 
 ```text
 data/
-├── raw/        # ZIPs, CSVs extraídos e JSON de cadastro
+├── raw/        # ZIPs e CSVs de preços, vendas municipais, Logística 02 e cadastro
 ├── metadata/   # manifestos de download e inspeção
 └── processed/  # saídas locais opcionais
 ```
