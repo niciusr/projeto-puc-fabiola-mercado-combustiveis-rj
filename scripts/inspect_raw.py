@@ -53,13 +53,45 @@ def inspect_csv(stream: BinaryIO, name: str, count_rows: bool) -> dict[str, Any]
     wrapper = io.TextIOWrapper(stream, encoding=encoding, newline="")
     reader = csv.reader(wrapper, delimiter=delimiter, quotechar='"')
     header = next(reader, [])
-    rows = sum(1 for row in reader if row) if count_rows else None
+    normalized_header = [column.lstrip("\ufeff").strip().casefold() for column in header]
+    period_index = normalized_header.index("período") if "período" in normalized_header else None
+    year_index = normalized_header.index("ano") if "ano" in normalized_header else None
+    rows = 0
+    min_period = None
+    max_period = None
+    min_year = None
+    max_year = None
+    if count_rows:
+        for row in reader:
+            if not row:
+                continue
+            rows += 1
+            if period_index is not None and period_index < len(row):
+                value = row[period_index].strip()
+                if value:
+                    min_period = value if min_period is None else min(min_period, value)
+                    max_period = value if max_period is None else max(max_period, value)
+            if year_index is not None and year_index < len(row):
+                try:
+                    value = int(row[year_index].strip())
+                except ValueError:
+                    continue
+                min_year = value if min_year is None else min(min_year, value)
+                max_year = value if max_year is None else max(max_year, value)
+    observed_range: dict[str, Any] = {}
+    if min_period is not None:
+        observed_range["periodo_min"] = min_period
+        observed_range["periodo_max"] = max_period
+    if min_year is not None:
+        observed_range["ano_min"] = min_year
+        observed_range["ano_max"] = max_year
     return {
         "member": name,
         "encoding": encoding,
         "delimiter": delimiter,
         "columns": header,
-        "row_count": rows,
+        "row_count": rows if count_rows else None,
+        "observed_range": observed_range or None,
     }
 
 
