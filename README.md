@@ -2,20 +2,21 @@
 
 Projeto de Engenharia de Dados desenvolvido para a disciplina de MVP, por Fabiola Dias Carvalho. A entrega organiza dados públicos da Agência Nacional do Petróleo, Gás Natural e Biocombustíveis (ANP) em um lakehouse no Databricks e produz tabelas analíticas reproduzíveis.
 
-O trabalho parte de uma pergunta de negócio definida antes da coleta: como evoluíram os volumes declarados por vendedor nas Unidades da Federação, qual foi a concentração observada nesses mercados e como esse contexto se relaciona, de forma descritiva, com os preços de revenda pesquisados pela ANP e com a escala das vendas municipais?
+O trabalho parte de uma pergunta de negócio que orienta o recorte: como evoluíram os volumes declarados por vendedor nas Unidades da Federação, qual foi a concentração observada nesses mercados e como esse contexto se relaciona, de forma descritiva, com os preços de revenda pesquisados pela ANP e com a escala das vendas municipais?
 
 ## Pergunta central e questões de análise
 
 **Pergunta central.** Como evoluiu o volume de gasolina C e etanol hidratado declarado por vendedor nas UFs brasileiras entre 2022 e 2024, qual é a estrutura de concentração observada e como ela se relaciona descritivamente com preços de revenda e escala municipal de vendas?
 
-1. Quais vendedores tiveram maior volume declarado por UF, produto e mês? Como se comportaram, por exemplo, Vibra, Ipiranga, Raízen e ALE nos estados onde aparecem?
-2. Qual foi a participação de cada vendedor no volume declarado da UF e qual a concentração do mercado, medida por participação do líder, soma dos três maiores e HHI?
-3. Como preços medianos de revenda, dispersão de preço e cobertura da pesquisa variaram por UF, mês e produto?
-4. Em quais UFs e anos o total anual das vendas municipais é compatível com o volume da fonte logística, e onde a diferença exige ressalva de escopo?
-5. Há padrões descritivos entre concentração, preço de revenda e escala do mercado? A análise evita interpretação causal.
-6. Qual é a cobertura das fontes e quais limitações impedem uma comparação direta entre empresas vendedoras, marcas de posto e preços individuais?
+1. Quais vendedores concentram os maiores volumes declarados em cada UF, mês e produto?
+2. Como evoluem a participação do vendedor líder, a participação dos três maiores e o HHI por UF, mês e produto?
+3. Como se comportam Vibra, Ipiranga, Raízen e ALE nos estados onde aparecem?
+4. Quais UFs apresentam preços medianos mais altos, maior dispersão e maior ou menor cobertura de coleta?
+5. Como concentração, preço de revenda e escala de volume variam conjuntamente na mesma UF, mês e produto?
+6. Em que medida os totais anuais da Logística 02 e das vendas municipais são conciliáveis por UF e produto?
+7. O que o cadastro atual de revendedores e bandeiras acrescenta como contexto, sem reconstituir a rede histórica?
 
-As perguntas, o recorte e as limitações estão registrados em [docs/objetivo.md](docs/objetivo.md), antes das rotinas de carga e análise.
+As perguntas, o recorte e as limitações estão registrados em [docs/objetivo.md](docs/objetivo.md). A matriz que liga cada pergunta à consulta e à evidência está em [docs/matriz_respostas.md](docs/matriz_respostas.md).
 
 ## Recorte e escolha das fontes
 
@@ -38,7 +39,7 @@ Por essa razão, o cruzamento entre volume e preço é agregado em `UF + mês + 
 | [Vendas de derivados e biocombustíveis](https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/vendas-de-derivados-de-petroleo-e-biocombustiveis) | volume anual municipal para escala e reconciliação | município × produto × ano |
 | [Cadastro de revendedores](https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos/dados-cadastrais-dos-revendedores-varejistas-de-combustiveis-automotivos) | fotografia atual da rede varejista | revendedor × data de extração |
 
-O coletor grava URL, data de acesso, tamanho e SHA-256 no manifesto local. Dados brutos não são publicados no repositório.
+O coletor grava URL, data de acesso, tamanho e SHA-256 no manifesto local. O resumo público da coleta e os termos de uso consultados estão em [docs/registro_coleta.md](docs/registro_coleta.md). Dados brutos não são publicados no repositório.
 
 ## Arquitetura
 
@@ -79,9 +80,10 @@ O desenho completo, as chaves e a linhagem estão em [docs/modelo_dados.md](docs
 2. Execute `python3 scripts/inspect_raw.py` para gerar o manifesto técnico de cada arquivo.
 3. Envie os arquivos brutos e os CSVs de `config/` para as pastas correspondentes de um Volume no Databricks.
 4. Importe e execute, nesta ordem, `00_preparar_arquivos_anp.py`, `01_ingestao_bronze.py`, `02_transformacao_modelo.py` e `03_qualidade_dados.py`.
-5. Execute `04_analises.sql` em uma consulta SQL e registre as evidências da execução final.
+5. Execute `04_analises.sql` em uma consulta SQL para as análises completas.
+6. Execute `05_capturas_evidencias.sql` para as saídas filtradas usadas nas evidências.
 
-O roteiro com caminhos, widgets, verificações e critérios de captura está em [docs/execucao_databricks.md](docs/execucao_databricks.md). A documentação não antecipa números: a discussão final deve ser preenchida exclusivamente a partir do lote executado, conforme [docs/discussao_resultados.md](docs/discussao_resultados.md).
+O roteiro com caminhos, widgets, verificações e critérios de captura está em [docs/execucao_databricks.md](docs/execucao_databricks.md). A discussão registra exclusivamente números do lote executado em [docs/discussao_resultados.md](docs/discussao_resultados.md).
 
 ## Execução registrada
 
@@ -107,4 +109,4 @@ O repositório versiona código, configurações, documentação e evidências s
 - autoavaliação preenchida com links para as evidências reais;
 - envio da versão final ao repositório remoto.
 
-Consulte [docs/evidencias.md](docs/evidencias.md) para o checklist e [docs/autoavaliacao.md](docs/autoavaliacao.md) para o fechamento da entrega.
+Consulte [docs/evidencias.md](docs/evidencias.md) para o checklist, [docs/registro_coleta.md](docs/registro_coleta.md) para a rastreabilidade das fontes e [docs/autoavaliacao.md](docs/autoavaliacao.md) para o fechamento da entrega.
