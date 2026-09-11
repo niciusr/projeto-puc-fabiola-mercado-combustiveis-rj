@@ -221,23 +221,24 @@
     </section>
 
     <section class="slide">
-      <header><p class="eyebrow">Ponto de partida</p><h2>O problema veio antes dos dados</h2></header>
+      <header><p class="eyebrow">Ponto de partida</p><h2>O problema orienta o uso dos dados</h2></header>
       <div>
         <p class="lead">Quis entender como o volume declarado por vendedor se distribui entre as UFs, quão concentrado é esse mercado e como esse contexto conversa com preços pesquisados e escala municipal de vendas.</p>
         <p class="quote">“Como evoluiu o volume de gasolina C e etanol hidratado declarado por vendedor nas UFs, qual é a estrutura de concentração observada e como ela se relaciona, de forma descritiva, com preços de revenda e escala municipal?”</p>
       </div>
-      <footer class="footer"><span>Objetivo e perguntas registrados antes da coleta</span><span>2</span></footer>
+      <footer class="footer"><span>Objetivo mantido como referência da entrega</span><span>2</span></footer>
     </section>
 
     <section class="slide">
       <header><p class="eyebrow">Perguntas de análise</p><h2>O que o projeto precisa responder</h2></header>
       <div class="cards">
-        <article class="card"><span class="number">01</span><h3>Vendedores</h3><p>Quem declara mais volume por UF, produto e mês? Como se comportam Vibra, Ipiranga, Raízen e Ale?</p></article>
+        <article class="card"><span class="number">01</span><h3>Vendedores</h3><p>Quem declara mais volume por UF, produto e mês?</p></article>
         <article class="card"><span class="number">02</span><h3>Concentração</h3><p>Qual é a participação do líder, dos três maiores e o HHI em cada mercado estadual?</p></article>
-        <article class="card"><span class="number">03</span><h3>Preços</h3><p>Como variam mediana, dispersão e cobertura da pesquisa de preços por UF?</p></article>
-        <article class="card"><span class="number">04</span><h3>Reconciliação</h3><p>O volume da logística é compatível com a soma municipal anual? Onde há diferença de escopo?</p></article>
+        <article class="card"><span class="number">03</span><h3>Grupos</h3><p>Como se comportam Vibra, Ipiranga, Raízen e Ale nos estados onde aparecem?</p></article>
+        <article class="card"><span class="number">04</span><h3>Preços</h3><p>Como variam mediana, dispersão e cobertura da pesquisa de preços por UF?</p></article>
         <article class="card"><span class="number">05</span><h3>Relações</h3><p>Que padrões descritivos aparecem entre preço, concentração e escala do volume?</p></article>
-        <article class="card"><span class="number">06</span><h3>Limites</h3><p>O que não pode ser afirmado ao cruzar vendedor, posto, bandeira e preço?</p></article>
+        <article class="card"><span class="number">06</span><h3>Reconciliação</h3><p>O volume da logística é compatível com a soma municipal anual?</p></article>
+        <article class="card"><span class="number">07</span><h3>Rede atual</h3><p>O que o cadastro de bandeiras acrescenta sem reescrever o histórico?</p></article>
       </div>
       <footer class="footer"><span>Sem inferência causal</span><span>3</span></footer>
     </section>
@@ -254,7 +255,7 @@
             <tr><td>Cadastro de revendedores</td><td>revenda × data de extração</td><td>fotografia atual da rede e das bandeiras</td></tr>
           </tbody>
         </table>
-        <div class="callout" style="margin-top:28px"><strong>Decisão importante.</strong> A empresa que declara a venda não é automaticamente a bandeira do posto. O projeto não cria essa ligação sem uma chave pública compatível.</div>
+        <div class="callout" style="margin-top:28px"><strong>Decisão importante.</strong> A empresa que declara a venda não é automaticamente a bandeira do posto. URLs, hashes e termos de uso consultados foram registrados sem republicar os arquivos brutos.</div>
       </div>
       <footer class="footer"><span>Fontes e links documentados no repositório</span><span>4</span></footer>
     </section>
@@ -300,7 +301,7 @@ dim_revenda ─ cadastro atual ─ dim_bandeira</div>
         <div class="grid-3">
           <article class="metric"><h3>Volume líquido</h3><p>Soma do volume declarado por vendedor. Ajustes negativos continuam visíveis no fato de origem.</p></article>
           <article class="metric"><h3>Participação</h3><p>Ranking usa saldo positivo do vendedor sobre o total positivo da mesma UF, mês e produto.</p></article>
-          <article class="metric"><h3>Concentração</h3><p>HHI, participação da líder e Top 3 mostram se o volume está distribuído ou concentrado.</p></article>
+          <article class="metric"><h3>Concentração</h3><p>HHI, participação da líder e Top 3 são calculados por UF, mês e produto; o resumo anual recalcula o indicador sobre o ano inteiro.</p></article>
         </div>
         <div class="formula">participacao_pct = volume positivo do vendedor / total positivo da UF · HHI = Σ(participacao_pct / 100)² × 10.000</div>
       </div>
@@ -314,7 +315,7 @@ dim_revenda ─ cadastro atual ─ dim_bandeira</div>
           <ul class="list">
             <li><strong>464 atributos perfilados:</strong> tipo, nulos, distintos, mínimo, máximo e categorias frequentes.</li>
             <li><strong>19 regras aprovadas:</strong> sem preço inválido, CNPJ fora do padrão, produto não mapeado ou chave de venda duplicada.</li>
-            <li><strong>7 regras informativas:</strong> 941 UFs ausentes, 337 ajustes negativos e 43.790 outliers continuam visíveis para auditoria.</li>
+            <li><strong>7 regras informativas:</strong> 941 linhas sem UF válida, 337 ajustes negativos e 43.790 outliers continuam visíveis para auditoria.</li>
             <li><strong>Critério:</strong> ocorrência não é apagada; recebe tabela, percentual e status para orientar a leitura.</li>
           </ul>
         </div>
@@ -328,14 +329,14 @@ dim_revenda ─ cadastro atual ─ dim_bandeira</div>
       <div class="grid-2">
         <div>
           <ul class="list">
-            <li><strong>Ranking:</strong> no DF, em 2023, Vibra declarou 38,61 milhões de litros de etanol (27,980%), seguida de Ipiranga e Raízen.</li>
-            <li><strong>Concentração:</strong> o HHI variou fortemente entre UFs; no AP, etanol de 2022 teve HHI 9.574 e Top 3 de 99,95%.</li>
+            <li><strong>Ranking mensal:</strong> em dezembro de 2023, no DF, Ipiranga declarou 5,817 milhões de litros de etanol (30,213%), seguida de Vibra e Raízen.</li>
+            <li><strong>Concentração:</strong> o HHI variou fortemente entre UFs; no AP, etanol de 2022 teve HHI 9.235 e Top 3 de 99,06%.</li>
             <li><strong>Preço e volume:</strong> as correlações são descritivas. Para etanol em 2023, a correlação entre log(volume) e preço foi -0,7589.</li>
-            <li><strong>Cobertura:</strong> a leitura de preço fica condicionada à pesquisa da ANP e aparece junto do indicador de cobertura.</li>
+            <li><strong>Preço:</strong> no etanol de 2024, RO teve mediana de R$ 4,990/litro e MT, R$ 3,590/litro; o maior spread foi no PA (R$ 1,043) e o menor em RR (R$ 0,100).</li>
           </ul>
         </div>
         <div class="evidence-grid">
-          <figure class="evidence"><img src="../docs/capturas_databricks/08_concentracao_uf.png" alt="Concentração por UF"><figcaption>HHI, Top 3 e líder por UF e produto.</figcaption></figure>
+          <figure class="evidence"><img src="../docs/capturas_databricks/08_concentracao_uf.png" alt="Concentração por UF"><figcaption>HHI, Top 3 e participação do líder por UF e produto.</figcaption></figure>
           <figure class="evidence"><img src="../docs/capturas_databricks/09_preco_volume.png" alt="Correlação descritiva de preço e volume"><figcaption>Relação descritiva entre preço, volume e concentração.</figcaption></figure>
         </div>
       </div>
@@ -369,7 +370,7 @@ dim_revenda ─ cadastro atual ─ dim_bandeira</div>
         <div>
           <ul class="list">
             <li><strong>Databricks:</strong> Volume organizado, lote Bronze identificado, 42 tabelas Delta e consulta SQL executada.</li>
-            <li><strong>Evidências:</strong> doze capturas organizadas por etapa, todas vinculadas ao lote nacional.</li>
+            <li><strong>Evidências:</strong> dezesseis capturas da execução nacional, organizadas por etapa e pergunta e vinculadas ao lote.</li>
             <li><strong>Repositório:</strong> código, configurações, documentação, apresentação e capturas ficam separados dos dados brutos e de credenciais.</li>
             <li><strong>Entrega:</strong> a publicação remota deve enviar exatamente esta versão, sem dados brutos.</li>
           </ul>
