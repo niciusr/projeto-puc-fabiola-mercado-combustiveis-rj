@@ -1,7 +1,6 @@
 -- Databricks SQL
--- Ajuste o catálogo e o schema se os widgets dos notebooks usarem outro destino.
 USE CATALOG workspace;
-USE SCHEMA anp_rj_2022_2024;
+USE SCHEMA anp_combustiveis_br_2022_2024;
 
 -- 1. Fechamento da carga e das regras de qualidade.
 SELECT *
@@ -12,149 +11,319 @@ SELECT regra_id, tabela, descricao, qtd_afetada, pct_afetada, status
 FROM gold_resultado_regra_qualidade
 ORDER BY status, regra_id;
 
--- 2. Cobertura da pesquisa diante dos municípios com potencial de comparação.
+-- 2. Ranking mensal geral de vendedores por UF.
+WITH vendas_mes AS (
+  SELECT
+    data_referencia,
+    uf,
+    produto_analitico,
+    empresa_canonica,
+    grupo_economico,
+    SUM(volume_liquido_litros) AS volume_mensal_litros
+  FROM gold_fato_venda_empresa_uf_mes
+  WHERE volume_liquido_litros > 0
+  GROUP BY data_referencia, uf, produto_analitico, empresa_canonica, grupo_economico
+), ranking AS (
+  SELECT
+    *,
+    100.0 * volume_mensal_litros / SUM(volume_mensal_litros) OVER (
+      PARTITION BY data_referencia, uf, produto_analitico
+    ) AS participacao_pct,
+    ROW_NUMBER() OVER (
+      PARTITION BY data_referencia, uf, produto_analitico
+      ORDER BY volume_mensal_litros DESC, empresa_canonica
+    ) AS posicao
+  FROM vendas_mes
+)
+SELECT
+  data_referencia,
+  uf,
+  produto_analitico,
+  posicao,
+  empresa_canonica,
+  grupo_economico,
+  ROUND(volume_mensal_litros, 0) AS volume_mensal_litros,
+  ROUND(participacao_pct, 3) AS participacao_pct
+FROM ranking
+WHERE posicao <= 10
+ORDER BY data_referencia, produto_analitico, uf, posicao;
+
+-- 2A. Ranking anual de apoio para leitura consolidada.
+WITH vendas_ano AS (
+  SELECT
+    ano,
+    uf,
+    produto_analitico,
+    empresa_canonica,
+    grupo_economico,
+    SUM(volume_liquido_litros) AS volume_anual_litros
+  FROM gold_fato_venda_empresa_uf_mes
+  WHERE volume_liquido_litros > 0
+  GROUP BY ano, uf, produto_analitico, empresa_canonica, grupo_economico
+), totais AS (
+  SELECT
+    ano,
+    uf,
+    produto_analitico,
+    SUM(volume_anual_litros) AS volume_total_litros
+  FROM vendas_ano
+  GROUP BY ano, uf, produto_analitico
+), ranking AS (
+  SELECT
+    v.*,
+    100.0 * v.volume_anual_litros / NULLIF(t.volume_total_litros, 0) AS participacao_pct,
+    ROW_NUMBER() OVER (
+      PARTITION BY v.ano, v.uf, v.produto_analitico
+      ORDER BY v.volume_anual_litros DESC, v.empresa_canonica
+    ) AS posicao
+  FROM vendas_ano v
+  JOIN totais t USING (ano, uf, produto_analitico)
+)
+SELECT
+  ano,
+  uf,
+  produto_analitico,
+  posicao,
+  empresa_canonica,
+  grupo_economico,
+  ROUND(volume_anual_litros, 0) AS volume_anual_litros,
+  ROUND(participacao_pct, 3) AS participacao_pct
+FROM ranking
+WHERE posicao <= 10
+ORDER BY ano, produto_analitico, uf, posicao;
+
+-- 3. Participação anual de Vibra, Ipiranga, Raízen e Ale por UF.
+WITH vendas_ano AS (
+  SELECT
+    ano,
+    uf,
+    produto_analitico,
+    empresa_canonica,
+    grupo_economico,
+    SUM(volume_liquido_litros) AS volume_anual_litros
+  FROM gold_fato_venda_empresa_uf_mes
+  WHERE volume_liquido_litros > 0
+    AND grupo_economico IN ('Vibra', 'Ipiranga', 'Raízen', 'Ale')
+  GROUP BY ano, uf, produto_analitico, empresa_canonica, grupo_economico
+), totais AS (
+  SELECT
+    ano,
+    uf,
+    produto_analitico,
+    SUM(volume_liquido_litros) AS volume_total_litros
+  FROM gold_fato_venda_empresa_uf_mes
+  WHERE volume_liquido_litros > 0
+  GROUP BY ano, uf, produto_analitico
+)
+SELECT
+  v.ano,
+  v.uf,
+  v.produto_analitico,
+  v.empresa_canonica,
+  v.grupo_economico,
+  ROUND(v.volume_anual_litros, 0) AS volume_anual_litros,
+  ROUND(100.0 * v.volume_anual_litros / NULLIF(t.volume_total_litros, 0), 3) AS participacao_pct
+FROM vendas_ano v
+JOIN totais t USING (ano, uf, produto_analitico)
+ORDER BY v.ano, v.produto_analitico, v.uf, participacao_pct DESC;
+
+-- 4. Líderes e concentração anual por UF.
+WITH vendas_empresa_ano AS (
+  SELECT
+    ano,
+    uf,
+    produto_analitico,
+    empresa_canonica,
+    SUM(volume_liquido_litros) AS volume_anual_litros
+  FROM gold_fato_venda_empresa_uf_mes
+  WHERE volume_liquido_litros > 0
+  GROUP BY ano, uf, produto_analitico, empresa_canonica
+), participacao_anual AS (
+  SELECT
+    *,
+    100.0 * volume_anual_litros / SUM(volume_anual_litros) OVER (
+      PARTITION BY ano, uf, produto_analitico
+    ) AS participacao_pct,
+    ROW_NUMBER() OVER (
+      PARTITION BY ano, uf, produto_analitico
+      ORDER BY volume_anual_litros DESC, empresa_canonica
+    ) AS posicao
+  FROM vendas_empresa_ano
+), concentracao_anual AS (
+  SELECT
+    ano,
+    uf,
+    produto_analitico,
+    SUM(volume_anual_litros) AS volume_anual_litros,
+    COUNT(*) AS vendedores_positivos,
+    SUM(POWER(participacao_pct / 100.0, 2) * 10000) AS hhi,
+    SUM(CASE WHEN posicao <= 3 THEN participacao_pct ELSE 0 END) AS participacao_top3_pct,
+    MAX(CASE WHEN posicao = 1 THEN empresa_canonica END) AS empresa_lider_anual,
+    MAX(CASE WHEN posicao = 1 THEN participacao_pct END) AS participacao_lider_anual_pct
+  FROM participacao_anual
+  GROUP BY ano, uf, produto_analitico
+)
+SELECT
+  ano,
+  uf,
+  produto_analitico,
+  ROUND(volume_anual_litros, 0) AS volume_anual_litros,
+  vendedores_positivos,
+  ROUND(hhi, 0) AS hhi,
+  ROUND(participacao_top3_pct, 2) AS participacao_top3_pct,
+  empresa_lider_anual,
+  ROUND(participacao_lider_anual_pct, 2) AS participacao_lider_anual_pct,
+  CASE
+    WHEN hhi < 1500 THEN 'BAIXA_CONCENTRACAO'
+    WHEN hhi < 2500 THEN 'CONCENTRACAO_MODERADA'
+    ELSE 'ALTA_CONCENTRACAO'
+  END AS faixa_hhi
+FROM concentracao_anual
+ORDER BY ano, produto_analitico, hhi DESC, uf;
+
+-- 5. Resumo anual de preço por UF, com dispersão e cobertura.
+SELECT
+  ano,
+  uf,
+  produto_analitico,
+  ROUND(PERCENTILE_APPROX(mediana_preco, 0.50, 10000), 3) AS mediana_das_medianas_mensais,
+  ROUND(AVG(spread_p90_p10), 3) AS spread_medio_p90_p10,
+  ROUND(STDDEV_POP(mediana_preco), 3) AS desvio_das_medianas_mensais,
+  COUNT(DISTINCT data_referencia) AS meses_com_preco,
+  ROUND(100.0 * COUNT(DISTINCT data_referencia) / 12, 1) AS cobertura_meses_pct,
+  SUM(qtd_coletas) AS qtd_coletas,
+  ROUND(AVG(qtd_postos), 1) AS postos_medio_mes,
+  ROUND(AVG(qtd_municipios), 1) AS municipios_medio_mes
+FROM gold_mart_mercado_uf_mes
+WHERE preco_disponivel
+GROUP BY ano, uf, produto_analitico
+ORDER BY ano, produto_analitico, mediana_das_medianas_mensais DESC, uf;
+
+-- 5A. Extremos anuais de preço, dispersão e coletas por UF.
+WITH resumo AS (
+  SELECT
+    uf,
+    ROUND(PERCENTILE_APPROX(mediana_preco, 0.50, 10000), 3) AS mediana_preco,
+    ROUND(AVG(spread_p90_p10), 3) AS spread_medio_p90_p10,
+    SUM(qtd_coletas) AS qtd_coletas
+  FROM gold_mart_mercado_uf_mes
+  WHERE preco_disponivel
+    AND ano = 2024
+    AND produto_analitico = 'ETANOL_HIDRATADO'
+  GROUP BY uf
+), faixa AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (ORDER BY mediana_preco DESC, uf) AS maior_preco,
+    ROW_NUMBER() OVER (ORDER BY mediana_preco, uf) AS menor_preco,
+    ROW_NUMBER() OVER (ORDER BY spread_medio_p90_p10 DESC, uf) AS maior_spread,
+    ROW_NUMBER() OVER (ORDER BY spread_medio_p90_p10, uf) AS menor_spread,
+    ROW_NUMBER() OVER (ORDER BY qtd_coletas DESC, uf) AS maior_cobertura,
+    ROW_NUMBER() OVER (ORDER BY qtd_coletas, uf) AS menor_cobertura
+  FROM resumo
+), extremos AS (
+  SELECT 'PRECO_MEDIANO' AS indicador, 'MAIOR' AS direcao, uf, mediana_preco AS valor
+  FROM faixa WHERE maior_preco = 1
+  UNION ALL
+  SELECT 'PRECO_MEDIANO', 'MENOR', uf, mediana_preco FROM faixa WHERE menor_preco = 1
+  UNION ALL
+  SELECT 'SPREAD_P90_P10', 'MAIOR', uf, spread_medio_p90_p10 FROM faixa WHERE maior_spread = 1
+  UNION ALL
+  SELECT 'SPREAD_P90_P10', 'MENOR', uf, spread_medio_p90_p10 FROM faixa WHERE menor_spread = 1
+  UNION ALL
+  SELECT 'COLETAS_ANUAIS', 'MAIOR', uf, CAST(qtd_coletas AS DOUBLE) FROM faixa WHERE maior_cobertura = 1
+  UNION ALL
+  SELECT 'COLETAS_ANUAIS', 'MENOR', uf, CAST(qtd_coletas AS DOUBLE) FROM faixa WHERE menor_cobertura = 1
+)
+SELECT indicador, direcao, uf, valor
+FROM extremos
+ORDER BY indicador, direcao DESC;
+
+-- 6. Evolução mensal de volume, preço e concentração.
+SELECT
+  data_referencia,
+  uf,
+  produto_analitico,
+  ROUND(volume_total_liquido_uf_litros, 0) AS volume_liquido_litros,
+  vendedores_positivos,
+  ROUND(hhi, 0) AS hhi,
+  ROUND(participacao_top3_pct, 2) AS participacao_top3_pct,
+  empresa_lider,
+  ROUND(mediana_preco, 3) AS mediana_preco,
+  ROUND(spread_p90_p10, 3) AS spread_p90_p10,
+  qtd_postos,
+  qtd_municipios
+FROM gold_mart_mercado_uf_mes
+WHERE volume_disponivel OR preco_disponivel
+ORDER BY produto_analitico, uf, data_referencia;
+
+-- 7. Relação descritiva entre preço e volume por UF-mês.
 SELECT
   ano,
   produto_analitico,
-  COUNT(*) AS municipios_no_universo,
-  SUM(CASE WHEN preco_disponivel THEN 1 ELSE 0 END) AS municipios_com_preco,
-  SUM(CASE WHEN cobertura_suficiente THEN 1 ELSE 0 END) AS municipios_publicaveis,
-  ROUND(100.0 * SUM(CASE WHEN preco_disponivel THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_cobertura
+  COUNT(*) AS observacoes_uf_mes,
+  ROUND(CORR(LOG(1 + volume_total_liquido_uf_litros), mediana_preco), 4) AS corr_log_volume_preco,
+  ROUND(CORR(hhi, mediana_preco), 4) AS corr_hhi_preco,
+  ROUND(CORR(participacao_top3_pct, mediana_preco), 4) AS corr_top3_preco
+FROM gold_mart_mercado_uf_mes
+WHERE volume_disponivel AND preco_disponivel
+GROUP BY ano, produto_analitico
+ORDER BY ano, produto_analitico;
+
+-- 8. Reconciliação entre as vendas por vendedor e o volume municipal.
+SELECT
+  ano,
+  uf,
+  grupo_reconciliacao_municipal,
+  meses_logistica_observados,
+  ROUND(volume_logistica_litros, 0) AS volume_logistica_litros,
+  ROUND(volume_municipal_litros, 0) AS volume_municipal_litros,
+  ROUND(diferenca_litros, 0) AS diferenca_litros,
+  ROUND(diferenca_pct, 3) AS diferenca_pct,
+  status_conciliacao
+FROM gold_reconciliacao_volume_uf_ano
+ORDER BY ano, grupo_reconciliacao_municipal, ABS(diferenca_pct) DESC, uf;
+
+-- 9. Cobertura da pesquisa de preços nos municípios com venda publicada.
+SELECT
+  ano,
+  produto_analitico,
+  SUM(municipios_com_venda) AS municipios_com_venda,
+  SUM(municipios_com_preco) AS municipios_com_preco,
+  SUM(municipios_publicaveis) AS municipios_publicaveis,
+  ROUND(100.0 * SUM(municipios_com_preco) / NULLIF(SUM(municipios_com_venda), 0), 2) AS cobertura_preco_pct
 FROM gold_cobertura_pesquisa
 GROUP BY ano, produto_analitico
 ORDER BY ano, produto_analitico;
 
--- 3. Ranking de preço mediano com a cobertura mínima exigida.
-WITH base AS (
-  SELECT
-    m.ano,
-    m.produto_analitico,
-    m.municipio,
-    m.mediana_preco_anual,
-    m.preco_relativo_estado,
-    m.semanas_pesquisadas,
-    m.postos_distintos,
-    ROW_NUMBER() OVER (
-      PARTITION BY m.ano, m.produto_analitico
-      ORDER BY m.mediana_preco_anual DESC
-    ) AS posicao_mais_caro,
-    ROW_NUMBER() OVER (
-      PARTITION BY m.ano, m.produto_analitico
-      ORDER BY m.mediana_preco_anual ASC
-    ) AS posicao_mais_barato
-  FROM gold_fato_mercado_municipio_anual m
-  WHERE m.publicar_analise
-)
-SELECT *
-FROM base
-WHERE posicao_mais_caro <= 10 OR posicao_mais_barato <= 10
-ORDER BY ano, produto_analitico, mediana_preco_anual DESC;
-
--- 4. Relação descritiva entre volume, preço e dispersão.
+-- 10. Municípios com preço e volume comparáveis.
 SELECT
-  produto_analitico,
-  ano,
-  COUNT(*) AS municipios_publicaveis,
-  ROUND(CORR(LOG(1 + volume_litros), mediana_preco_anual), 4) AS corr_log_volume_preco,
-  ROUND(CORR(LOG(1 + volume_litros), preco_relativo_estado), 4) AS corr_log_volume_preco_relativo,
-  ROUND(CORR(LOG(1 + volume_litros), spread_medio_p90_p10), 4) AS corr_log_volume_spread,
-  ROUND(CORR(LOG(1 + volume_litros), cv_medio_preco_pct), 4) AS corr_log_volume_cv
-FROM gold_fato_mercado_municipio_anual
-WHERE publicar_analise
-GROUP BY produto_analitico, ano
-ORDER BY produto_analitico, ano;
+  m.ano,
+  m.uf,
+  d.municipio,
+  m.produto_analitico,
+  ROUND(m.volume_litros, 0) AS volume_litros,
+  ROUND(m.mediana_preco_anual, 3) AS mediana_preco_anual,
+  ROUND(m.preco_relativo_uf, 3) AS preco_relativo_uf,
+  m.semanas_pesquisadas,
+  m.postos_distintos
+FROM gold_fato_mercado_municipio_anual m
+JOIN gold_dim_municipio d USING (codigo_ibge, uf)
+WHERE m.publicar_analise
+ORDER BY m.ano, m.produto_analitico, m.uf, m.mediana_preco_anual DESC;
 
--- 5. Casos atípicos: preço relativo ao estado versus volume relativo ao produto-ano.
-WITH base AS (
-  SELECT *
-  FROM gold_fato_mercado_municipio_anual
-  WHERE publicar_analise
-), referencia AS (
-  SELECT
-    produto_analitico,
-    ano,
-    percentile_approx(volume_litros, 0.5, 10000) AS mediana_volume
-  FROM base
-  GROUP BY produto_analitico, ano
-)
+-- 11. Fotografia atual da rede por bandeira.
 SELECT
-  b.ano,
-  b.produto_analitico,
-  b.municipio,
-  b.volume_litros,
-  b.mediana_preco_anual,
-  b.preco_relativo_estado,
-  CASE
-    WHEN b.volume_litros >= r.mediana_volume AND b.preco_relativo_estado >= 1 THEN 'volume alto / preço alto'
-    WHEN b.volume_litros >= r.mediana_volume AND b.preco_relativo_estado < 1 THEN 'volume alto / preço baixo'
-    WHEN b.volume_litros < r.mediana_volume AND b.preco_relativo_estado >= 1 THEN 'volume baixo / preço alto'
-    ELSE 'volume baixo / preço baixo'
-  END AS quadrante
-FROM base b
-JOIN referencia r USING (produto_analitico, ano)
-ORDER BY ano, produto_analitico, quadrante, preco_relativo_estado DESC;
-
--- 6. Bandeira comparada com a mediana do mesmo município, semana e produto.
-WITH referencia_local AS (
-  SELECT
-    codigo_ibge,
-    produto_analitico,
-    data_coleta,
-    percentile_approx(preco_venda, 0.5, 10000) AS mediana_local
-  FROM gold_fato_preco_coletado
-  WHERE preco_valido
-    AND selecionado_para_agregacao
-    AND municipio_conciliado
-    AND produto_analitico IN ('GASOLINA_C', 'ETANOL_HIDRATADO')
-  GROUP BY codigo_ibge, produto_analitico, data_coleta
-), desvios AS (
-  SELECT
-    p.produto_analitico,
-    COALESCE(p.bandeira, 'NAO INFORMADA') AS bandeira,
-    p.preco_venda - r.mediana_local AS desvio_preco_local
-  FROM gold_fato_preco_coletado p
-  JOIN referencia_local r
-    ON p.codigo_ibge = r.codigo_ibge
-   AND p.produto_analitico = r.produto_analitico
-   AND p.data_coleta = r.data_coleta
-  WHERE p.preco_valido AND p.selecionado_para_agregacao AND p.municipio_conciliado
-)
-SELECT
-  produto_analitico,
+  data_extracao,
+  uf,
   bandeira,
-  COUNT(*) AS observacoes,
-  ROUND(AVG(desvio_preco_local), 4) AS desvio_medio_da_mediana_local,
-  ROUND(percentile_approx(desvio_preco_local, 0.5, 10000), 4) AS desvio_mediano_da_mediana_local
-FROM desvios
-GROUP BY produto_analitico, bandeira
-HAVING COUNT(*) >= 30
-ORDER BY produto_analitico, desvio_medio_da_mediana_local DESC;
+  qtd_revendas,
+  ROUND(participacao_rede_pct, 2) AS participacao_rede_pct
+FROM gold_fato_rede_bandeira_uf_snapshot
+QUALIFY ROW_NUMBER() OVER (PARTITION BY data_extracao, uf ORDER BY qtd_revendas DESC, bandeira) <= 10
+ORDER BY data_extracao DESC, uf, qtd_revendas DESC;
 
--- 7. Outliers são sinalizados para revisão, nunca apagados do dado bruto.
-SELECT
-  ano,
-  produto_analitico,
-  COUNT(*) AS observacoes_validas,
-  SUM(CASE WHEN outlier_iqr_avaliavel THEN 1 ELSE 0 END) AS observacoes_iqr_avaliaveis,
-  SUM(CASE WHEN outlier_iqr THEN 1 ELSE 0 END) AS outliers_iqr,
-  ROUND(
-    100.0 * SUM(CASE WHEN outlier_iqr THEN 1 ELSE 0 END)
-      / NULLIF(SUM(CASE WHEN outlier_iqr_avaliavel THEN 1 ELSE 0 END), 0),
-    3
-  ) AS pct_outliers
-FROM gold_preco_outlier
-GROUP BY ano, produto_analitico
-ORDER BY ano, produto_analitico;
-
--- 8. O cadastro atual é uma fotografia; esta consulta não infere status histórico.
-SELECT
-  cnpj_observado_historico,
-  COUNT(*) AS revendedores_no_snapshot
-FROM gold_fato_cadastro_revenda_snapshot
-GROUP BY cnpj_observado_historico
-ORDER BY cnpj_observado_historico DESC;
-
--- 9. Catálogo observado: use para documentar nulos, domínios e categorias reais.
+-- 12. Catálogo observado para a documentação da entrega.
 SELECT
   tabela,
   coluna,
@@ -171,10 +340,8 @@ SELECT
 FROM gold_catalogo_atributos
 ORDER BY tabela, coluna;
 
--- 10. Síntese objetiva para a abertura da apresentação do projeto.
-SELECT
-  (SELECT SUM(quantidade_linhas) FROM gold_dim_lote_carga) AS linhas_em_bronze,
-  (SELECT COUNT(*) FROM gold_fato_preco_coletado) AS observacoes_preco,
-  (SELECT COUNT(*) FROM gold_fato_mercado_municipio_anual) AS municipios_produto_ano,
-  (SELECT COUNT(*) FROM gold_resultado_regra_qualidade WHERE status = 'APROVADA') AS regras_aprovadas,
-  (SELECT COUNT(*) FROM gold_resultado_regra_qualidade WHERE status = 'ATENCAO') AS regras_em_atencao;
+-- 13. Inventário do schema entregue.
+SELECT table_name, table_type
+FROM workspace.information_schema.tables
+WHERE table_schema = 'anp_combustiveis_br_2022_2024'
+ORDER BY table_name;
