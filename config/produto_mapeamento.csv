@@ -1,11 +1,15 @@
-fonte;produto_origem_normalizado;produto_analitico;familia;compatibilidade_analitica;usar_cruzamento_principal;observacao
-precos;GASOLINA;GASOLINA_C;CICLO_OTTO;direta;true;Corresponde ao produto municipal Gasolina C para o cruzamento principal.
-precos;ETANOL;ETANOL_HIDRATADO;CICLO_OTTO;direta;true;Corresponde ao produto municipal Etanol Hidratado.
-precos;GASOLINA ADITIVADA;GASOLINA_ADITIVADA;CICLO_OTTO;somente_preco;false;Mantida para análise de preço sem duplicar o volume de Gasolina C.
-precos;DIESEL;OLEO_DIESEL;DIESEL;agregada;false;A venda municipal agrega tipos de diesel; não entra no cruzamento principal.
-precos;DIESEL S10;OLEO_DIESEL;DIESEL;agregada;false;A venda municipal agrega tipos de diesel; não entra no cruzamento principal.
-precos;GNV;GNV;GAS_NATURAL;somente_preco;false;Mantido apenas na análise de preços.
-vendas_municipais;GASOLINA C;GASOLINA_C;CICLO_OTTO;direta;true;Volume anual em litros.
-vendas_municipais;ETANOL;ETANOL_HIDRATADO;CICLO_OTTO;direta;true;Volume anual em litros.
-vendas_municipais;ETANOL HIDRATADO;ETANOL_HIDRATADO;CICLO_OTTO;direta;true;Variação encontrada em algumas publicações da ANP.
-vendas_municipais;OLEO DIESEL;OLEO_DIESEL;DIESEL;agregada;false;Mantido para checagem, sem comparação direta com preços.
+fonte;produto_origem_normalizado;produto_analitico;familia;grupo_reconciliacao_municipal;compatibilidade_analitica;usar_analise_principal;observacao
+PRECOS;GASOLINA;GASOLINA_C;CICLO_OTTO;GASOLINA_C_TOTAL;agregada_por_uf_mes;true;Preço de revenda de gasolina comum usado no mart estadual.
+PRECOS;ETANOL;ETANOL_HIDRATADO;CICLO_OTTO;ETANOL_HIDRATADO;agregada_por_uf_mes;true;Preço de revenda de etanol hidratado usado no mart estadual.
+PRECOS;GASOLINA ADITIVADA;GASOLINA_ADITIVADA;CICLO_OTTO;GASOLINA_C_TOTAL;somente_preco;false;Mantido para perfil e qualidade sem entrar no mart principal.
+PRECOS;DIESEL;OLEO_DIESEL;DIESEL;OLEO_DIESEL;somente_preco;false;Mantido para perfil e qualidade.
+PRECOS;DIESEL S10;OLEO_DIESEL_S10;DIESEL;OLEO_DIESEL;somente_preco;false;Mantido para perfil e qualidade.
+PRECOS;GNV;GNV;GAS_NATURAL;GNV;somente_preco;false;Mantido para perfil e qualidade.
+VENDAS_MUNICIPAIS;GASOLINA C;GASOLINA_C;CICLO_OTTO;GASOLINA_C_TOTAL;anual_por_municipio;true;Volume anual publicado por município.
+VENDAS_MUNICIPAIS;ETANOL;ETANOL_HIDRATADO;CICLO_OTTO;ETANOL_HIDRATADO;anual_por_municipio;true;Volume anual publicado por município.
+VENDAS_MUNICIPAIS;ETANOL HIDRATADO;ETANOL_HIDRATADO;CICLO_OTTO;ETANOL_HIDRATADO;anual_por_municipio;true;Variação de nome encontrada em publicações da ANP.
+LOGISTICA_MERCADO;GASOLINA C COMUM;GASOLINA_C;CICLO_OTTO;GASOLINA_C_TOTAL;mensal_por_uf_vendedor;true;Produto principal da análise por vendedor.
+LOGISTICA_MERCADO;ETANOL HIDRATADO COMUM;ETANOL_HIDRATADO;CICLO_OTTO;ETANOL_HIDRATADO;mensal_por_uf_vendedor;true;Produto principal da análise por vendedor.
+LOGISTICA_MERCADO;GASOLINA C COMUM ADITIVADA;GASOLINA_C_ADITIVADA;CICLO_OTTO;GASOLINA_C_TOTAL;reconciliacao;false;Incluído apenas na reconciliação do grupo gasolina C.
+LOGISTICA_MERCADO;GASOLINA C PREMIUM;GASOLINA_C_PREMIUM;CICLO_OTTO;GASOLINA_C_TOTAL;reconciliacao;false;Incluído apenas na reconciliação do grupo gasolina C.
+LOGISTICA_MERCADO;GASOLINA C PREMIUM ADITIVADA;GASOLINA_C_PREMIUM_ADITIVADA;CICLO_OTTO;GASOLINA_C_TOTAL;reconciliacao;false;Incluído apenas na reconciliação do grupo gasolina C.
